@@ -1,0 +1,91 @@
+# LocalAI Configuration
+# Optimized for Dell Inspiron 15 3535 (CPU-only inference)
+# AMD Ryzen 5 7530U - 6 cores, 12 threads, 16GB RAM
+
+# ==============================================================================
+# BACKEND CONFIGURATION
+# ==============================================================================
+backend: llama-cpp
+context_size: 4096
+threads: 4
+batch_size: 512
+
+# CPU-specific optimizations
+f16: true  # Use FP16 for better performance on CPU
+low_vram: true  # Optimize for RAM constraints
+mmap: true  # Memory-map model files
+mlock: false  # Don't lock memory (can cause issues on Windows)
+
+# ==============================================================================
+# MODEL PRELOADING
+# ==============================================================================
+# Models will be loaded on startup if specified in LOCALAI_PRELOAD_MODELS env var
+# Recommended models for CPU inference:
+# - qwen2.5-coder:7b (code generation)
+# - deepseek-r1:8b (reasoning tasks)
+# - llama-3.2:8b (general purpose)
+
+# ==============================================================================
+# API CONFIGURATION
+# ==============================================================================
+api:
+  host: 0.0.0.0
+  port: 8080
+  cors: true
+  cors_origins:
+    - http://localhost:*
+    - http://127.0.0.1:*
+
+# ==============================================================================
+# LOGGING
+# ==============================================================================
+debug: false
+log_level: info
+
+# ==============================================================================
+# PERFORMANCE TUNING
+# ==============================================================================
+# Parallel requests handling
+parallel_requests: 2
+
+# Disable GPU (not available on this hardware)
+gpu_layers: 0
+
+# Cache settings
+cache:
+  enabled: true
+  size: 1024  # MB
+
+# ==============================================================================
+# MODEL GALLERY (Auto-download from HuggingFace)
+# ==============================================================================
+# Uncomment to enable automatic model downloads
+# models:
+#   - name: qwen2.5-coder-7b
+#     url: https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
+#     file: qwen2.5-coder-7b-instruct-q4_k_m.gguf
+#
+#   - name: deepseek-r1-8b
+#     url: https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-8B-GGUF
+#     file: deepseek-r1-distill-qwen-8b-q4_k_m.gguf
+
+# ==============================================================================
+# NOTES
+# ==============================================================================
+# Model download location: ./models/local/
+#
+# Recommended quantization levels for CPU:
+# - Q4_K_M: Best balance (4-bit, medium quality)
+# - Q5_K_M: Higher quality, slower
+# - Q8_0: Near-original quality, much slower
+#
+# Expected inference speeds on Ryzen 5 7530U:
+# - 7B model (Q4_K_M): ~10-15 tokens/sec
+# - 8B model (Q4_K_M): ~8-12 tokens/sec
+#
+# To manually download models:
+# 1. Visit https://huggingface.co/models
+# 2. Search for GGUF versions
+# 3. Download to ./models/local/
+# 4. Restart LocalAI container
+# ==============================================================================

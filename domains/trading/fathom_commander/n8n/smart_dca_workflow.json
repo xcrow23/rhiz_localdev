@@ -1,0 +1,170 @@
+{
+  "name": "Rhiz Smart DCA",
+  "active": true,
+  "isArchived": false,
+  "versionId": "a1b2c3d4-1111-2222-3333-444455556666",
+  "nodes": [
+    {
+      "id": "trigger-daily-dca",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Daily 10AM CT",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "id": "get-btc-price",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ticker?pair=XXBTZUSD",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get BTC Price",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "id": "get-history",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ohlc?pair=XXBTZUSD&interval=1440",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get 20-Day History",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 500]
+    },
+    {
+      "id": "check-status",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/",
+        "options": {"timeout": 10000}
+      },
+      "name": "Check System Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 100]
+    },
+    {
+      "id": "smart-dca-logic",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Smart DCA Logic\nconst status = $('Check System Status').first().json;\nconst ticker = $('Get BTC Price').first().json;\nconst ohlc = $('Get 20-Day History').first().json;\n\n// Safety check\nif (status.trading_halted) {\n  return [{ json: { action: 'skip', reason: 'Trading halted: ' + status.halt_reason } }];\n}\n\n// Get current price\nconst currentPrice = ticker.tickers?.XXBTZUSD?.price || 0;\nif (!currentPrice) {\n  return [{ json: { action: 'skip', reason: 'Could not get current price' } }];\n}\n\n// Calculate 20-day average from OHLC data\nconst candles = ohlc.ohlc || [];\nlet sum = 0;\nlet count = 0;\nfor (const candle of candles.slice(-20)) {\n  const closePrice = parseFloat(candle[4]);\n  if (closePrice) {\n    sum += closePrice;\n    count++;\n  }\n}\nconst avg20d = count > 0 ? sum / count : currentPrice;\n\n// Calculate 24h change\nconst yesterdayClose = candles.length > 1 ? parseFloat(candles[candles.length - 2][4]) : currentPrice;\nconst change24h = ((currentPrice - yesterdayClose) / yesterdayClose) * 100;\n\n// Position relative to average\nconst positionVsAvg = ((currentPrice - avg20d) / avg20d) * 100;\n\n// Day of week (0 = Sunday)\nconst dayOfWeek = new Date().getDay();\nconst isSunday = dayOfWeek === 0;\n\n// Decision logic\nlet action = 'skip';\nlet amount = 0;\nlet reason = '';\n\nif (positionVsAvg < -5 && change24h < -3) {\n  action = 'buy';\n  amount = 15;\n  reason = `Major dip: ${positionVsAvg.toFixed(1)}% below avg, ${change24h.toFixed(1)}% 24h drop`;\n} else if (positionVsAvg < -3) {\n  action = 'buy';\n  amount = 12;\n  reason = `Moderate dip: ${positionVsAvg.toFixed(1)}% below avg`;\n} else if (isSunday) {\n  action = 'buy';\n  amount = 10;\n  reason = `Sunday accumulation (${positionVsAvg.toFixed(1)}% vs avg)`;\n} else {\n  reason = `No opportunity: ${positionVsAvg.toFixed(1)}% vs avg`;\n}\n\nreturn [{\n  json: {\n    action,\n    amount,\n    reason,\n    market_data: {\n      current_price: currentPrice,\n      avg_20d: avg20d,\n      position_vs_avg_pct: positionVsAvg,\n      change_24h_pct: change24h,\n      is_sunday: isSunday\n    },\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Smart DCA Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "id": "should-buy-check",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "should-buy",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "buy",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Should Buy?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [970, 300]
+    },
+    {
+      "id": "execute-dca-buy",
+      "parameters": {
+        "method": "POST",
+        "url": "http://rhiz_fathom_commander:8765/trade/execute",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"buy\",\n  \"symbol\": \"BTC/USD\",\n  \"amount_usd\": {{ $json.amount }},\n  \"reason\": \"Smart DCA: {{ $json.reason }}\"\n}",
+        "options": {"timeout": 30000}
+      },
+      "name": "Execute DCA Buy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1190, 200]
+    },
+    {
+      "id": "log-success",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const decision = $('Smart DCA Logic').first().json;\nconst result = $('Execute DCA Buy').first().json;\nconsole.log('=== SMART DCA EXECUTED ===');\nconsole.log('Amount: $' + decision.amount);\nconsole.log('Reason: ' + decision.reason);\nreturn [{ json: { success: true, type: 'smart_dca', amount: decision.amount, reason: decision.reason, result: result } }];"
+      },
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1410, 200]
+    },
+    {
+      "id": "log-skip",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const decision = $('Smart DCA Logic').first().json;\nconsole.log('=== SMART DCA SKIPPED ===');\nconsole.log('Reason: ' + decision.reason);\nreturn [{ json: { success: true, type: 'smart_dca_skip', reason: decision.reason } }];"
+      },
+      "name": "Log Skip",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1190, 400]
+    }
+  ],
+  "connections": {
+    "Daily 10AM CT": {
+      "main": [[
+        {"node": "Check System Status", "type": "main", "index": 0},
+        {"node": "Get BTC Price", "type": "main", "index": 0},
+        {"node": "Get 20-Day History", "type": "main", "index": 0}
+      ]]
+    },
+    "Check System Status": {
+      "main": [[{"node": "Smart DCA Logic", "type": "main", "index": 0}]]
+    },
+    "Get BTC Price": {
+      "main": [[{"node": "Smart DCA Logic", "type": "main", "index": 0}]]
+    },
+    "Get 20-Day History": {
+      "main": [[{"node": "Smart DCA Logic", "type": "main", "index": 0}]]
+    },
+    "Smart DCA Logic": {
+      "main": [[{"node": "Should Buy?", "type": "main", "index": 0}]]
+    },
+    "Should Buy?": {
+      "main": [
+        [{"node": "Execute DCA Buy", "type": "main", "index": 0}],
+        [{"node": "Log Skip", "type": "main", "index": 0}]
+      ]
+    },
+    "Execute DCA Buy": {
+      "main": [[{"node": "Log Success", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "timezone": "America/Chicago"
+  }
+}

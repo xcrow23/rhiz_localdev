@@ -1,0 +1,16 @@
+[Unit]
+Description=Rhiz Memory Cloud Sync Timer
+Requires=rhiz-memory-sync.service
+
+[Timer]
+# Run every 6 hours
+OnCalendar=*-*-* 00,06,12,18:00:00
+
+# Run 5 minutes after boot
+OnBootSec=5min
+
+# If system was off during scheduled time, run on next boot
+Persistent=true
+
+[Install]
+WantedBy=timers.target

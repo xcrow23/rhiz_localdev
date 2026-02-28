@@ -1,0 +1,226 @@
+# Rhiz Skill: Portfolio Assessment
+# Domain: Trading
+# Purpose: Establish current financial position before any trading activity
+
+schema_version: "1.0.0"
+
+skill:
+  name: "portfolio_assessment"
+  version: "0.1.0"
+  domain: "trading"
+  
+  taxonomy:
+    category: "position_management"
+    subcategory: "assessment"
+    tags:
+      - "portfolio"
+      - "balance"
+      - "position"
+      - "prerequisite"
+      - "kraken"
+  
+  description: |
+    Retrieves and analyzes the current state of all holdings across connected
+    exchanges. This skill is a prerequisite for most trading decisions—we must
+    know where we stand before deciding where to go.
+    
+    Outputs a structured view of:
+    - Available balances by asset
+    - Open positions (if any perpetuals)
+    - Active orders pending execution
+    - Total portfolio value in USD equivalent
+  
+  causal_model: |
+    Trading decisions without position awareness lead to:
+    - Overexposure (buying what we already hold too much of)
+    - Liquidity issues (not knowing available capital)
+    - Risk miscalculation (not accounting for existing exposure)
+    
+    By establishing position first, we constrain the decision space to
+    actions that make sense given our current state. The portfolio is
+    the ground truth that trading strategies operate upon.
+
+recognition:
+  trigger_patterns:
+    - pattern: "what do I have"
+      confidence: 0.8
+    - pattern: "portfolio|balance|holdings|position"
+      confidence: 0.9
+    - pattern: "before we trade"
+      confidence: 0.7
+    - pattern: "current state|where we stand"
+      confidence: 0.7
+    
+  context_requirements:
+    - "Exchange connector configured in Hummingbot"
+    - "API credentials valid and not expired"
+    
+  anti_patterns:
+    - "Asking about specific trade execution (use trade_execution skill)"
+    - "Asking about market conditions without position context (use market_scan skill)"
+
+interface:
+  inputs:
+    - name: "exchange"
+      type: "string"
+      required: false
+      description: "Specific exchange to query. If omitted, queries all connected exchanges."
+      validation: "Must be a configured connector name"
+    
+    - name: "include_dust"
+      type: "boolean"
+      required: false
+      description: "Whether to include tiny balances (dust). Default false."
+  
+  outputs:
+    - name: "portfolio_summary"
+      type: "object"
+      description: |
+        {
+          timestamp: ISO datetime,
+          total_usd_value: number,
+          balances: [
+            { asset: string, available: number, locked: number, usd_value: number }
+          ],
+          positions: [
+            { symbol: string, side: long|short, size: number, entry_price: number, pnl: number }
+          ],
+          active_orders: [
+            { symbol: string, side: buy|sell, type: limit|market, price: number, amount: number }
+          ],
+          risk_metrics: {
+            largest_position_pct: number,
+            cash_pct: number,
+            exposure_by_asset: { asset: pct }
+          }
+        }
+  
+  side_effects: []  # Read-only operation
+
+composition:
+  primitives:
+    - name: "exchange_connection_check"
+      location: "core/skills/primitives/exchange_connection_check.yaml"
+      purpose: "Verify exchange API is reachable before querying"
+    
+    - name: "usd_price_lookup"
+      location: "core/skills/primitives/usd_price_lookup.yaml"
+      purpose: "Convert asset balances to USD equivalent"
+  
+  skill_dependencies: []  # This is a foundational skill with no skill deps
+  
+  tool_dependencies:
+    - name: "hummingbot"
+      type: "mcp"
+      required: true
+      tools_used:
+        - "get_portfolio_overview"
+        - "get_prices"
+
+execution:
+  mode: "synchronous"
+  
+  human_checkpoints:
+    before_execution: false      # No approval needed for read-only
+    on_low_confidence: false     # Always confident for data retrieval
+    on_side_effects: false       # No side effects
+  
+  procedure: |
+    1. VERIFY: Check exchange connector is configured and responsive
+       - Call exchange_connection_check primitive
+       - If fails: Return error with troubleshooting steps
+    
+    2. RETRIEVE: Get portfolio data from Hummingbot
+       - Call get_portfolio_overview tool
+       - Extract balances, positions, active_orders
+    
+    3. ENRICH: Add USD valuations
+       - For each non-USD asset with balance > dust_threshold:
+         - Call get_prices for asset/USD pair
+         - Calculate USD equivalent
+       - Sum total portfolio USD value
+    
+    4. ANALYZE: Calculate risk metrics
+       - largest_position_pct = max(position_usd_value) / total_usd_value
+       - cash_pct = (USD + stablecoin balances) / total_usd_value
+       - exposure_by_asset = { asset: asset_usd_value / total_usd_value }
+    
+    5. FORMAT: Structure output
+       - Assemble portfolio_summary object
+       - Include timestamp for cache invalidation
+    
+    6. PRESENT: Return structured summary with narrative interpretation
+       - "You have $X across N assets. Largest position is Y at Z%..."
+
+failure_modes:
+  - condition: "Exchange API unreachable"
+    detection: "Connection timeout or auth error from get_portfolio_overview"
+    recovery: "Check API credentials, verify exchange status, retry with backoff"
+    severity: "high"
+  
+  - condition: "Price lookup fails for asset"
+    detection: "get_prices returns null or error for trading pair"
+    recovery: "Use last known price with staleness warning, or exclude from USD calc"
+    severity: "medium"
+  
+  - condition: "Unexpected asset type"
+    detection: "Asset not in known asset registry"
+    recovery: "Include in output with USD value as null, flag for manual review"
+    severity: "low"
+
+telemetry:
+  metrics:
+    - name: "portfolio_assessment_duration_ms"
+      type: "histogram"
+      description: "Time to complete full portfolio assessment"
+    
+    - name: "portfolio_total_usd"
+      type: "gauge"
+      description: "Total portfolio value for tracking over time"
+  
+  logs:
+    - event: "portfolio_assessed"
+      level: "info"
+      data: ["timestamp", "total_usd", "asset_count", "position_count"]
+
+documentation:
+  examples:
+    - input: |
+        User: "What's our current position?"
+      output: |
+        Portfolio as of 2025-12-17 14:30 UTC:
+        
+        Total Value: $147.23
+        
+        Balances:
+        - USD: $100.00 (67.9%)
+        - BTC: 0.00042 (~$18.50, 12.6%)
+        - ETH: 0.008 (~$28.73, 19.5%)
+        
+        No open positions.
+        No active orders.
+        
+        Risk Profile:
+        - Cash position: 67.9% (healthy for conservative approach)
+        - Largest single exposure: ETH at 19.5%
+      context: "Initial portfolio assessment with small balance, no active trades"
+  
+  related_skills:
+    - "market_sentiment_scan"
+    - "trade_execution"
+    - "risk_assessment"
+  
+  references:
+    - "Hummingbot MCP documentation"
+    - "Kraken API balance endpoints"
+
+metadata:
+  created: "2025-12-17"
+  created_by: "collaborative"
+  last_modified: "2025-12-17"
+  status: "draft"
+  
+  training_value:
+    reasoning_quality: "high"
+    transferability: "high"      # Pattern applies to any exchange
+    novelty: "low"               # Standard portfolio query

@@ -1,0 +1,13 @@
+name = "rhiz-strategy-refresh"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Run every day at 12:00 UTC (6am CT)
+[triggers]
+crons = ["0 12 * * *"]
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "rhiz-trading"
+database_id = "1a5349f5-8ce5-4c74-8491-2d4d626b982a"

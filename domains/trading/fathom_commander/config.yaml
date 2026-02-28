@@ -1,0 +1,100 @@
+# Fathom Commander Configuration
+# Claude Code's Trading Command Center
+# Created: 2025-12-26
+
+commander:
+  name: "Fathom Commander"
+  version: "1.0.0"
+  instance: "Claude Code (First Mate)"
+
+  # Operational modes
+  mode: "paper"  # live, paper, disabled - CHANGED TO PAPER FOR PHASE 1 SAFETY
+
+  # Monitoring intervals (seconds)
+  heartbeat_interval: 60
+  market_poll_interval: 30
+  position_refresh_interval: 120
+
+# Safety limits - these are HARD enforced
+commander_limits:
+  max_order_usd: 50          # Hard ceiling per order
+  approval_threshold: 20     # Slack approval above this
+  max_daily_trades: 10       # Prevent runaway loops
+  max_position_per_pair: 100 # Max exposure per asset ($)
+  daily_loss_limit: 25       # Stop trading if down $25
+  max_open_orders: 3         # Limit concurrent orders
+  min_time_between_trades: 60 # Seconds between trades (anti-spam)
+
+# Strategy configuration
+strategies:
+  enabled:
+    - momentum_basic         # Simple price following
+    # - mean_reversion       # Disabled until tested
+    # - arbitrage            # Future
+    # - dca_accumulate       # Dollar cost average
+
+  default_strategy: "momentum_basic"
+
+  # Strategy-specific parameters
+  momentum_basic:
+    lookback_minutes: 5
+    threshold_percent: 1.0   # 1% move triggers signal
+    take_profit_percent: 2.0
+    stop_loss_percent: 1.5
+    position_size_usd: 10
+
+# Trading pairs configuration
+pairs:
+  enabled:
+    - "XXBTZUSD"   # BTC/USD - primary learning pair
+    - "XETHZUSD"   # ETH/USD - secondary
+    # - "ADAUSD"   # ADA - future exploration
+    # - "SOLUSD"   # SOL - future exploration
+
+  primary: "XXBTZUSD"
+
+# Approval workflow
+approval:
+  enabled: true
+  channel: "trading"        # Slack channel
+  timeout_minutes: 30       # Auto-reject after 30 min no response
+  require_reason: true      # Captain must provide reason for rejection
+
+  # What requires approval
+  triggers:
+    - order_value_exceeds: 20
+    - new_strategy_activation: true
+    - limit_increase_request: true
+    - emergency_stop_override: true
+
+# Memory integration
+memory:
+  qdrant_url: "http://localhost:6333"
+  collection: "fathom_trading"
+  log_all_decisions: true
+  log_heartbeats: false     # Too noisy
+
+# Alert configuration
+alerts:
+  slack_enabled: false      # Enable when webhook configured
+  slack_webhook: ""         # To be configured
+
+  # Alert triggers
+  triggers:
+    daily_loss_limit_hit: true
+    position_limit_hit: true
+    strategy_error: true
+    auth_failure: true
+    consecutive_losses: 3   # Alert after 3 losses in a row
+
+# Kraken connection
+kraken:
+  tier: "starter"
+  rate_limit_per_minute: 15
+  timeout_seconds: 30
+
+# State persistence
+state:
+  file: "state/commander_state.json"
+  auto_save_interval: 60    # Save state every 60 seconds
+  backup_on_shutdown: true

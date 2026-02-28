@@ -1,0 +1,117 @@
+{
+  "name": "Rhiz Volatility Sentinel",
+  "active": true,
+  "isArchived": false,
+  "versionId": "f6a7b8c9-6666-7777-8888-999900001111",
+  "nodes": [
+    {
+      "id": "trigger-4h-vol",
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "cronExpression", "expression": "30 */4 * * *"}]
+        }
+      },
+      "name": "Every 4 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "id": "get-ticker-vol",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ticker?pair=XXBTZUSD",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get BTC Ticker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 200]
+    },
+    {
+      "id": "get-ohlc-vol",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ohlc?pair=XXBTZUSD&interval=60",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get Hourly OHLC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 400]
+    },
+    {
+      "id": "volatility-analysis",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Volatility Sentinel Analysis\nconst ticker = $('Get BTC Ticker').first().json;\nconst ohlc = $('Get Hourly OHLC').first().json;\n\nconst btc = ticker.tickers?.XXBTZUSD;\nif (!btc) {\n  return [{ json: { action: 'skip', reason: 'No ticker data' } }];\n}\n\nconst currentPrice = btc.price;\nconst high24h = btc.high_24h;\nconst low24h = btc.low_24h;\n\n// 24h volatility (range as % of price)\nconst range24h = high24h - low24h;\nconst volatility24h = (range24h / currentPrice) * 100;\n\n// Calculate recent volatility from hourly candles (last 6 hours)\nconst candles = ohlc.ohlc || [];\nconst recentCandles = candles.slice(-6);\nlet recentHighs = [], recentLows = [];\nfor (const c of recentCandles) {\n  recentHighs.push(parseFloat(c[2])); // high\n  recentLows.push(parseFloat(c[3]));  // low\n}\nconst recentHigh = Math.max(...recentHighs);\nconst recentLow = Math.min(...recentLows);\nconst recentRange = recentHigh - recentLow;\nconst recentVolatility = (recentRange / currentPrice) * 100;\n\n// Volatility regimes\nconst HIGH_VOL_THRESHOLD = 6;   // >6% = high volatility\nconst LOW_VOL_THRESHOLD = 2;    // <2% = low volatility\n\nlet regime = 'normal';\nlet alertLevel = 'info';\nlet recommendation = '';\n\nif (volatility24h > HIGH_VOL_THRESHOLD) {\n  regime = 'high';\n  alertLevel = 'warning';\n  recommendation = 'High volatility detected. Consider pausing new entries or increasing dip thresholds. Big moves beget big moves.';\n} else if (volatility24h < LOW_VOL_THRESHOLD) {\n  regime = 'low';\n  alertLevel = 'info';\n  recommendation = 'Low volatility. Safer for market making but fewer opportunities. Normal DCA is fine.';\n} else {\n  regime = 'normal';\n  alertLevel = 'info';\n  recommendation = 'Normal volatility. Continue standard strategy.';\n}\n\n// Trend detection (is price near high or low of range?)\nconst positionInRange = (currentPrice - low24h) / range24h;\nlet trend = 'neutral';\nif (positionInRange > 0.8) trend = 'near_high';\nelse if (positionInRange < 0.2) trend = 'near_low';\n\nreturn [{\n  json: {\n    timestamp: new Date().toISOString(),\n    current_price: currentPrice,\n    \n    volatility: {\n      range_24h: range24h,\n      volatility_24h_pct: volatility24h,\n      recent_6h_volatility_pct: recentVolatility,\n      high_24h: high24h,\n      low_24h: low24h\n    },\n    \n    regime: regime,\n    alert_level: alertLevel,\n    recommendation: recommendation,\n    \n    trend: {\n      position_in_range: positionInRange,\n      direction: trend\n    },\n    \n    thresholds: {\n      high_vol: HIGH_VOL_THRESHOLD,\n      low_vol: LOW_VOL_THRESHOLD\n    }\n  }\n}];"
+      },
+      "name": "Volatility Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "id": "check-high-vol",
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{
+            "id": "is-high-vol",
+            "leftValue": "={{ $json.regime }}",
+            "rightValue": "high",
+            "operator": {"type": "string", "operation": "equals"}
+          }],
+          "combinator": "and"
+        }
+      },
+      "name": "High Volatility?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [970, 300]
+    },
+    {
+      "id": "log-alert",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const v = $input.first().json;\nconsole.log('=== VOLATILITY ALERT ===');\nconsole.log('24h Volatility: ' + v.volatility.volatility_24h_pct.toFixed(2) + '%');\nconsole.log('Range: $' + v.volatility.low_24h.toFixed(0) + ' - $' + v.volatility.high_24h.toFixed(0));\nconsole.log('Regime: ' + v.regime.toUpperCase());\nconsole.log('Trend: ' + v.trend.direction);\nconsole.log('Recommendation: ' + v.recommendation);\nreturn [{ json: { alert: true, ...v } }];"
+      },
+      "name": "Log Volatility Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1190, 200]
+    },
+    {
+      "id": "log-normal",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const v = $input.first().json;\nconsole.log('=== VOLATILITY CHECK ===');\nconsole.log('24h Volatility: ' + v.volatility.volatility_24h_pct.toFixed(2) + '% (' + v.regime + ')');\nconsole.log('Price: $' + v.current_price.toFixed(2) + ' (' + v.trend.direction + ')');\nreturn [{ json: { logged: true, ...v } }];"
+      },
+      "name": "Log Normal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1190, 400]
+    }
+  ],
+  "connections": {
+    "Every 4 Hours": {
+      "main": [[
+        {"node": "Get BTC Ticker", "type": "main", "index": 0},
+        {"node": "Get Hourly OHLC", "type": "main", "index": 0}
+      ]]
+    },
+    "Get BTC Ticker": {"main": [[{"node": "Volatility Analysis", "type": "main", "index": 0}]]},
+    "Get Hourly OHLC": {"main": [[{"node": "Volatility Analysis", "type": "main", "index": 0}]]},
+    "Volatility Analysis": {"main": [[{"node": "High Volatility?", "type": "main", "index": 0}]]},
+    "High Volatility?": {
+      "main": [
+        [{"node": "Log Volatility Alert", "type": "main", "index": 0}],
+        [{"node": "Log Normal", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "timezone": "America/Chicago"
+  }
+}

@@ -1,0 +1,17 @@
+name = "rhiz-daily-health-check"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# HEALTH_CHECK_KEY should be set as a secret via:
+# wrangler secret put HEALTH_CHECK_KEY
+# Value: rhiz-health-monitoring-2026
+
+# Run every 4 hours
+[triggers]
+crons = ["0 */4 * * *"]
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "rhiz-trading"
+database_id = "1a5349f5-8ce5-4c74-8491-2d4d626b982a"

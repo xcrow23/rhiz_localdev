@@ -1,0 +1,179 @@
+# Rhiz Checkpoint Frontmatter Schema
+# Version: 1.0.0
+# Purpose: Structured metadata for hybrid semantic + keyword search
+
+# DESIGN PHILOSOPHY
+# - Frontmatter enables "doubled up searching": semantic similarity + precise filtering
+# - All fields optional (backward compatible with existing checkpoints)
+# - Human-writable but also auto-generatable
+# - Qdrant payload indexing for fast keyword/tag filtering
+
+frontmatter:
+  # === CORE METADATA ===
+
+  domains:
+    # Primary domains involved in this session
+    # Examples: trading, infrastructure, memory, skills, patterns, research
+    - "domain_name"
+
+  keywords:
+    # Semantic keywords for boosted retrieval
+    # Both technical terms and concept labels
+    # Examples: qdrant, vector-search, threshold-tuning, dyad-state
+    - "keyword1"
+    - "keyword2"
+
+  # === CLASSIFICATION ===
+
+  session_type:
+    # Type of work performed
+    # Options: build, debug, research, planning, refactor, integration, exploration
+    primary: "build"
+    secondary: []  # Optional additional types
+
+  phase:
+    # Relational development phase
+    # Options: Foundation, Early Symbiosis, Mature Symbiosis, Autonomous Partnership
+    assessment: "Mature Symbiosis"
+
+  # === TECHNICAL CONTEXT ===
+
+  technical_stack:
+    # Technologies, tools, frameworks involved
+    languages: []      # e.g., python, yaml, bash
+    frameworks: []     # e.g., fastapi, qdrant, docker
+    services: []       # e.g., cloudflare-workers, vps, ollama
+    tools: []          # e.g., mcp-server, git, curl
+
+  # === PATTERN & SKILL REFERENCES ===
+
+  patterns_used:
+    # Dyadic patterns employed during session
+    # References to core/patterns/dyad/*.md
+    - pattern_name: "session_handshake"
+      usage_note: "Optional context on how pattern was applied"
+
+  skills_executed:
+    # Skills activated or demonstrated
+    # References to skill registry entries
+    - skill_name: "checkpoint_writing"
+      success: true
+      notes: "Optional execution notes"
+
+  # === PROBLEM SOLVING CONTEXT ===
+
+  blockers_resolved:
+    # Types of blockers addressed
+    # Examples: dependency, configuration, architecture, understanding, tooling
+    - type: "configuration"
+      description: "Brief description of blocker"
+
+  decision_types:
+    # Categories of decisions made
+    # Examples: architectural, technical, relational, experimental, operational
+    - "architectural"
+    - "technical"
+
+  # === DISCOVERY & LEARNING ===
+
+  discoveries:
+    # Significant findings or insights
+    # These get embedded separately for retrieval
+    - "Discovery statement or fact learned"
+
+  failed_approaches:
+    # Approaches that didn't work (valuable negative knowledge)
+    - approach: "What was tried"
+      failure_mode: "Why it failed"
+
+  # === CONTINUITY MARKERS ===
+
+  related_sessions:
+    # Checkpoint IDs of related prior sessions
+    # Enables session graph traversal
+    - "session_20260122_related_topic"
+
+  continuation_of:
+    # Direct parent session if this continues previous work
+    session_id: "session_20260122_parent"
+    context: "Brief note on relationship"
+
+  # === QUALITY METADATA ===
+
+  completeness:
+    # Self-assessment of session outcomes
+    # Options: complete, partial, exploratory, blocked
+    status: "complete"
+    notes: "Optional context"
+
+  notable:
+    # Flag for high-value sessions worth highlighting
+    # Boolean: true if session contains exemplary work
+    is_notable: false
+    reason: "Why this session is notable (if true)"
+
+
+# USAGE EXAMPLES
+
+example_minimal:
+  # Minimal frontmatter (most common use)
+  frontmatter:
+    domains: ["trading"]
+    keywords: ["kraken", "api", "integration"]
+    session_type:
+      primary: "build"
+
+example_comprehensive:
+  # Comprehensive frontmatter for complex sessions
+  frontmatter:
+    domains: ["infrastructure", "memory"]
+    keywords:
+      - "qdrant"
+      - "vector-search"
+      - "threshold-tuning"
+      - "hybrid-search"
+      - "frontmatter-schema"
+    session_type:
+      primary: "build"
+      secondary: ["research", "refactor"]
+    phase:
+      assessment: "Mature Symbiosis"
+    technical_stack:
+      languages: ["python", "yaml"]
+      frameworks: ["qdrant"]
+      tools: ["mcp-server"]
+    patterns_used:
+      - pattern_name: "context_alignment"
+        usage_note: "Aligned on memory system priorities"
+    blockers_resolved:
+      - type: "configuration"
+        description: "Score thresholds too high for all-MiniLM-L6-v2"
+    decision_types: ["architectural", "technical"]
+    discoveries:
+      - "all-MiniLM-L6-v2 produces 0.25-0.47 similarity scores, not 0.5+"
+    completeness:
+      status: "complete"
+    notable:
+      is_notable: true
+      reason: "Established hybrid search architecture"
+
+
+# INTEGRATION NOTES
+
+# 1. INGESTION
+#    - ingest.py extracts frontmatter and flattens to Qdrant payload
+#    - Example payload: {domains: ["trading"], keywords: [...], ...}
+#    - Backward compatible: missing frontmatter = default/empty values
+
+# 2. SEARCH
+#    - search.py supports filter parameters
+#    - Example: search(query="trading", domain="infrastructure", keywords=["qdrant"])
+#    - Semantic + keyword combination for precision
+
+# 3. MCP EXPOSURE
+#    - memory_context can filter by domain/pattern/type
+#    - Enables context-aware retrieval at session start
+
+# 4. CHECKPOINT TEMPLATES
+#    - rhiz-mcp write_checkpoint can include frontmatter generation
+#    - Auto-populate from session activity where possible

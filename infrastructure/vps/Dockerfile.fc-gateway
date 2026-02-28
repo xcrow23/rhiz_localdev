@@ -1,0 +1,31 @@
+# Fathom Commander HTTP Gateway
+# Provides REST API wrapper for FC MCP tools
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy FC source files
+COPY domains/trading/fathom_commander/ ./
+
+# Create state and logs directories
+RUN mkdir -p /app/state /app/logs
+
+# Expose HTTP gateway port
+EXPOSE 8767
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8767/heartbeat || exit 1
+
+# Run HTTP gateway
+# Pass port as argument: python gateway.py 8767
+CMD ["python", "-u", "gateway.py", "8767"]

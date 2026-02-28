@@ -1,0 +1,28 @@
+# Strategic Intelligence Layer - Dependencies
+# Python 3.11+
+
+# Core data processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# YAML configuration
+PyYAML>=6.0
+
+# Machine learning (Phase 2 - used by Learning Engine)
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Qdrant integration (Phase 2 - Memory & Learning)
+qdrant-client>=1.7.0
+
+# Testing
+pytest>=7.0.0
+
+# Future: Embedding generation (Phase 2.5)
+# sentence-transformers>=2.2.0
+
+# API server (for cloud deployment and n8n integration)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0
+requests>=2.31.0

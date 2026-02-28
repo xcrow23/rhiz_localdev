@@ -1,0 +1,44 @@
+# Fathom Commander HTTP Gateway
+# Provides REST API wrapper for FC MCP tools
+# This runs gateway.py (HTTP interface) instead of server.py (MCP stdio)
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir fastapi uvicorn httpx
+
+# Copy all FC source files
+COPY . ./
+
+# Create state and logs directories
+RUN mkdir -p /app/state /app/logs
+
+# Create non-root user
+RUN useradd -m -u 1000 fc-gateway && \
+    chown -R fc-gateway:fc-gateway /app
+
+USER fc-gateway
+
+# Expose HTTP gateway port
+EXPOSE 8767
+
+# Environment variables with defaults
+ENV PYTHONUNBUFFERED=1 \
+    FC_MODE=paper \
+    FC_HTTP_PORT=8767
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8767/health || exit 1
+
+# Run HTTP gateway
+# gateway.py accepts port as command-line argument
+CMD ["python", "-u", "gateway.py", "8767"]

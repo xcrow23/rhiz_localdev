@@ -1,0 +1,176 @@
+{
+  "name": "SIL Strategy Selection (Fixed)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "strategy-schedule-trigger",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 400]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Generate 200 mock OHLCV candles for testing\n// In production, this would fetch real market data from exchange API\n\nconst candles = [];\nconst now = Date.now();\nconst oneHour = 3600000;\nlet basePrice = 42000; // Starting BTC price\n\nfor (let i = 199; i >= 0; i--) {\n  const timestamp = new Date(now - (i * oneHour)).toISOString();\n  \n  // Simulate price movement with slight volatility\n  const volatility = (Math.random() - 0.5) * 1000;\n  const open = basePrice;\n  const close = basePrice + volatility;\n  const high = Math.max(open, close) + Math.random() * 200;\n  const low = Math.min(open, close) - Math.random() * 200;\n  const volume = 1000 + Math.random() * 5000;\n  \n  candles.push({\n    timestamp,\n    open,\n    high,\n    low,\n    close,\n    volume\n  });\n  \n  basePrice = close; // Next candle starts where this one closed\n}\n\nreturn {\n  json: {\n    pair: 'BTC/USD',\n    portfolio_balance: 100.0,\n    current_position: 0,\n    ohlcv: candles\n  }\n};"
+      },
+      "id": "generate-mock-data",
+      "name": "Generate Mock OHLCV Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 400],
+      "notes": "In production, fetch real data from exchange API"
+    },
+    {
+      "parameters": {
+        "url": "http://sil-api:8000/strategy/select",
+        "method": "POST",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "call-sil-strategy",
+      "name": "Call SIL Strategy Selection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const strategyData = $input.all()[0].json;\nconst timestamp = new Date().toISOString();\n\nconsole.log(`[${timestamp}] SIL Strategy Selected:`, JSON.stringify(strategyData, null, 2));\n\n// Extract key fields\nconst selected = strategyData.selected_strategy || 'none';\nconst action = strategyData.action || 'hold';\nconst confidence = strategyData.regime_confidence || 0;\nconst position = strategyData.position_size || {};\n\nreturn {\n  json: {\n    timestamp,\n    pair: strategyData.pair,\n    regime: strategyData.regime,\n    strategy_name: selected,\n    action: action,\n    confidence: confidence,\n    position_size_usd: position.size_usd || 0,\n    risk_percentage: position.risk_percentage || 0,\n    reasoning: strategyData.reasoning || 'No reasoning provided'\n  }\n};"
+      },
+      "id": "process-strategy",
+      "name": "Process Strategy Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "high-confidence-check",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ]
+        }
+      },
+      "id": "filter-high-confidence",
+      "name": "High Confidence?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const strategyData = $input.all()[0].json;\n\nconsole.log('✅ HIGH CONFIDENCE STRATEGY DETECTED');\nconsole.log(`Pair: ${strategyData.pair}`);\nconsole.log(`Regime: ${strategyData.regime}`);\nconsole.log(`Strategy: ${strategyData.strategy_name}`);\nconsole.log(`Action: ${strategyData.action}`);\nconsole.log(`Confidence: ${strategyData.confidence}`);\nconsole.log(`Position Size: $${strategyData.position_size_usd}`);\nconsole.log(`Reasoning: ${strategyData.reasoning}`);\n\nreturn {\n  json: {\n    ...strategyData,\n    execution_status: 'READY_FOR_EXECUTION',\n    note: 'Paper trading - would send to Hummingbot in Phase 2'\n  }\n};"
+      },
+      "id": "log-high-confidence",
+      "name": "Log High Confidence Strategy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300],
+      "notes": "Phase 2: Send to Hummingbot API"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const strategyData = $input.all()[0].json;\n\nconsole.log('⚠️ Low confidence strategy - monitoring only');\nconsole.log(`Pair: ${strategyData.pair}`);\nconsole.log(`Regime: ${strategyData.regime}`);\nconsole.log(`Strategy: ${strategyData.strategy_name}`);\nconsole.log(`Confidence: ${strategyData.confidence}`);\n\nreturn {\n  json: {\n    ...strategyData,\n    execution_status: 'MONITOR_ONLY',\n    note: 'Confidence too low for execution'\n  }\n};"
+      },
+      "id": "log-low-confidence",
+      "name": "Log Low Confidence Strategy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 500]
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Generate Mock OHLCV Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Mock OHLCV Data": {
+      "main": [
+        [
+          {
+            "node": "Call SIL Strategy Selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call SIL Strategy Selection": {
+      "main": [
+        [
+          {
+            "node": "Process Strategy Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Strategy Response": {
+      "main": [
+        [
+          {
+            "node": "High Confidence?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Confidence?": {
+      "main": [
+        [
+          {
+            "node": "Log High Confidence Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Low Confidence Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "timezone": "America/New_York"
+  }
+}

@@ -1,0 +1,170 @@
+# Rhiz Primitive: USD Price Lookup
+# Type: Data retrieval primitive
+# Purpose: Get current USD value for any tradable asset
+
+schema_version: "1.0.0"
+
+primitive:
+  name: "usd_price_lookup"
+  version: "0.1.0"
+  type: "data_retrieval"
+  
+  description: |
+    Retrieves current USD-equivalent price for a given asset.
+    Handles direct USD pairs and routing through intermediate pairs
+    (e.g., TOKEN → BTC → USD) when direct pair unavailable.
+    Includes staleness detection and confidence scoring.
+  
+  causal_model: |
+    Price accuracy depends on:
+    1. Exchange liquidity (low volume = high spread = unreliable price)
+    2. Data freshness (stale prices during volatility = incorrect valuation)
+    3. Pair availability (exotic tokens may need multi-hop conversion)
+    
+    We return confidence scores so consuming skills can decide how to
+    handle uncertain valuations.
+
+interface:
+  inputs:
+    - name: "asset"
+      type: "string"
+      required: true
+      description: "Asset symbol (e.g., 'BTC', 'ETH', 'SOL')"
+    
+    - name: "exchange"
+      type: "string"
+      required: false
+      description: "Specific exchange to query. If omitted, uses default."
+    
+    - name: "max_staleness_seconds"
+      type: "number"
+      required: false
+      description: "Maximum acceptable age of price data. Default 60."
+  
+  outputs:
+    - name: "price_data"
+      type: "object"
+      description: |
+        {
+          asset: string,
+          usd_price: number | null,
+          timestamp: ISO datetime,
+          staleness_seconds: number,
+          confidence: "high" | "medium" | "low" | "none",
+          route: string[],  # e.g., ["ETH", "USD"] or ["TOKEN", "BTC", "USD"]
+          source: string,   # exchange name
+          error: string | null
+        }
+
+tool_dependencies:
+  - name: "hummingbot"
+    type: "mcp"
+    tools_used:
+      - "get_prices"
+
+implementation:
+  language: "pseudocode"
+  code: |
+    # Stablecoins that are 1:1 with USD
+    STABLECOINS = ["USDT", "USDC", "DAI", "BUSD", "TUSD"]
+    
+    # Common intermediate pairs for routing
+    ROUTING_BASES = ["BTC", "ETH", "USDT"]
+    
+    function usd_price_lookup(asset, exchange=default, max_staleness=60):
+      
+      # Handle USD and stablecoins directly
+      if asset == "USD" or asset in STABLECOINS:
+        return {
+          asset: asset,
+          usd_price: 1.0,
+          timestamp: now(),
+          staleness_seconds: 0,
+          confidence: "high",
+          route: [asset, "USD"],
+          source: "hardcoded",
+          error: null
+        }
+      
+      # Try direct USD pair first
+      direct_pair = f"{asset}/USD"
+      result = hummingbot.get_prices(trading_pair=direct_pair, connector=exchange)
+      
+      if result.success:
+        return format_price_response(result, route=[asset, "USD"])
+      
+      # Try stablecoin pairs
+      for stable in ["USDT", "USDC"]:
+        pair = f"{asset}/{stable}"
+        result = hummingbot.get_prices(trading_pair=pair, connector=exchange)
+        
+        if result.success:
+          return format_price_response(result, route=[asset, stable, "USD"])
+      
+      # Try routing through BTC or ETH
+      for base in ROUTING_BASES:
+        pair1 = f"{asset}/{base}"
+        pair2 = f"{base}/USD"
+        
+        result1 = hummingbot.get_prices(trading_pair=pair1, connector=exchange)
+        result2 = hummingbot.get_prices(trading_pair=pair2, connector=exchange)
+        
+        if result1.success and result2.success:
+          computed_price = result1.price * result2.price
+          return {
+            asset: asset,
+            usd_price: computed_price,
+            timestamp: min(result1.timestamp, result2.timestamp),
+            staleness_seconds: max(result1.staleness, result2.staleness),
+            confidence: "medium",  # Multi-hop reduces confidence
+            route: [asset, base, "USD"],
+            source: exchange,
+            error: null
+          }
+      
+      # No route found
+      return {
+        asset: asset,
+        usd_price: null,
+        timestamp: now(),
+        staleness_seconds: null,
+        confidence: "none",
+        route: [],
+        source: exchange,
+        error: f"No USD conversion route found for {asset}"
+      }
+    
+    function format_price_response(result, route):
+      staleness = (now() - result.timestamp).seconds
+      
+      confidence = "high"
+      if staleness > 30:
+        confidence = "medium"
+      if staleness > 120:
+        confidence = "low"
+      
+      return {
+        asset: route[0],
+        usd_price: result.price,
+        timestamp: result.timestamp,
+        staleness_seconds: staleness,
+        confidence: confidence,
+        route: route,
+        source: result.exchange,
+        error: null
+      }
+
+failure_modes:
+  - condition: "No USD route exists"
+    recovery: "Return null price with error explanation. Consuming skill decides how to handle."
+  
+  - condition: "Price data stale"
+    recovery: "Return price with low confidence flag. Consuming skill may retry or use cached."
+  
+  - condition: "Exchange rate limited"
+    recovery: "Implement exponential backoff, use cached price if available."
+
+metadata:
+  created: "2025-12-17"
+  created_by: "collaborative"
+  status: "draft"

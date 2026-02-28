@@ -1,0 +1,302 @@
+# Memory Search Skill
+# Hybrid semantic + keyword search expertise for Rhiz memory system
+
+skill:
+  name: "memory_search"
+  version: "1.0.0"
+  domain: "infrastructure"
+  category: "memory_retrieval"
+
+  description: |
+    Expertise in querying Rhiz memory system using hybrid semantic + keyword search.
+    Combines vector similarity with structured metadata filtering for precision retrieval.
+
+  # RECOGNITION PATTERNS
+  # When should this skill activate?
+  triggers:
+    keywords:
+      - "search memories"
+      - "find checkpoints"
+      - "previous sessions"
+      - "when did we"
+      - "what sessions involved"
+      - "show me all"
+      - "filter by domain"
+      - "memory system"
+
+    context_patterns:
+      - "Need to recall previous work on [topic]"
+      - "Find sessions where we worked on [domain]"
+      - "What decisions were made about [subject]"
+      - "Show sessions using [pattern/tool]"
+      - "Retrieve context for [topic]"
+
+    user_questions:
+      - "When did we work on trading?"
+      - "What infrastructure decisions have we made?"
+      - "Show me sessions about Qdrant"
+      - "Find sessions using context_alignment pattern"
+
+  # CORE KNOWLEDGE
+  knowledge:
+    embedding_model: "all-MiniLM-L6-v2"
+    dimensions: 384
+
+    score_thresholds:
+      general_search: 0.25
+      auto_context: 0.30
+      rationale: "all-MiniLM-L6-v2 produces 0.25-0.47 similarity scores (lower than larger models)"
+
+    search_modes:
+      semantic_only:
+        when: "Conceptual/fuzzy queries where exact domain unknown"
+        method: "search(query, limit, score_threshold)"
+        precision: "moderate"
+        recall: "high"
+
+      hybrid:
+        when: "Need precision filtering by domain/keyword/pattern"
+        method: "hybrid_search(query, domains, keywords, patterns, ...)"
+        precision: "high"
+        recall: "moderate"
+        description: "Doubled up searching - semantic + keyword"
+
+    frontmatter_fields:
+      domains: "Domain tags (trading, infrastructure, memory, skills, patterns, research)"
+      keywords: "Semantic keywords for boosted retrieval"
+      patterns_used: "Dyadic patterns employed during session"
+      decision_types: "Categories of decisions (architectural, technical, relational)"
+      session_type: "Session classification (build, debug, research, planning)"
+      technical_stack: "Technologies/tools involved"
+      is_notable: "Flag for exemplary sessions"
+
+    filter_logic:
+      within_array: "OR (MatchAny) - keywords=['qdrant', 'vector'] means has qdrant OR vector"
+      across_filters: "AND - domains=['trading'] + keywords=['kraken'] means trading AND has kraken"
+
+  # EXECUTION PRIMITIVES
+  primitives:
+    - name: "semantic_search"
+      description: "Pure vector similarity search"
+      code_pattern: |
+        from search import MemorySearcher
+        searcher = MemorySearcher()
+        results = searcher.search(
+            query="your semantic query",
+            limit=5,
+            score_threshold=0.25  # tuned for all-MiniLM-L6-v2
+        )
+
+    - name: "domain_filtered_search"
+      description: "Search within specific domain(s)"
+      code_pattern: |
+        results = searcher.hybrid_search(
+            query="your query",
+            domains=["trading"],  # or ["infrastructure", "memory"]
+            limit=5
+        )
+
+    - name: "keyword_filtered_search"
+      description: "Search by semantic keywords"
+      code_pattern: |
+        results = searcher.hybrid_search(
+            query="your query",
+            keywords=["qdrant", "vector-search"],
+            limit=5
+        )
+
+    - name: "pattern_filtered_search"
+      description: "Find sessions using specific dyadic patterns"
+      code_pattern: |
+        results = searcher.hybrid_search(
+            query="alignment work",
+            patterns=["context_alignment"],
+            limit=5
+        )
+
+    - name: "precision_search"
+      description: "Multi-filter for high precision"
+      code_pattern: |
+        results = searcher.hybrid_search(
+            query="deployment architecture",
+            domains=["infrastructure"],
+            keywords=["cloudflare", "workers"],
+            decision_types=["architectural"],
+            is_notable=True,
+            limit=3
+        )
+
+    - name: "mcp_hybrid_search"
+      description: "Use MCP tool for hybrid search"
+      mcp_call: "hybrid_search_checkpoints"
+      code_pattern: |
+        # Via rhiz-mcp MCP server
+        result = mcp_client.call_tool(
+            "hybrid_search_checkpoints",
+            query="your query",
+            domains=["domain1"],
+            keywords=["keyword1"],
+            limit=5
+        )
+
+  # DECISION HEURISTICS
+  decision_tree:
+    - condition: "Fuzzy/conceptual query, domain unknown"
+      action: "Use semantic_search"
+      example: "'What did we learn about databases?'"
+
+    - condition: "Need all sessions in specific domain"
+      action: "Use domain_filtered_search"
+      example: "'Show all trading sessions'"
+
+    - condition: "Looking for sessions about specific tech/tool"
+      action: "Use keyword_filtered_search"
+      example: "'Find sessions about Qdrant'"
+
+    - condition: "Need sessions using specific pattern"
+      action: "Use pattern_filtered_search"
+      example: "'Which sessions used context_alignment?'"
+
+    - condition: "Precise multi-criteria query"
+      action: "Use precision_search with multiple filters"
+      example: "'Show notable infrastructure sessions about deployment'"
+
+    - condition: "Recurring cross-session queries"
+      action: "Consider creating saved query pattern"
+      example: "Weekly review of notable sessions"
+
+  # COMMON PATTERNS
+  usage_patterns:
+    session_startup:
+      description: "Automatic context retrieval at session start"
+      implementation: "session_start hook calls memory_context with 0.30 threshold"
+      improvement: "Will benefit from hybrid filtering by active domain"
+
+    cross_domain_exploration:
+      description: "Find related work across multiple domains"
+      pattern: |
+        # Find infrastructure work related to trading
+        results = searcher.hybrid_search(
+            query="trading integration",
+            domains=["infrastructure"],
+            keywords=["api", "deployment"]
+        )
+
+    decision_archaeology:
+      description: "Trace decision history on topic"
+      pattern: |
+        results = searcher.hybrid_search(
+            query="architecture decisions",
+            decision_types=["architectural"],
+            keywords=["deployment", "cloudflare"],
+            limit=10
+        )
+
+    pattern_usage_analysis:
+      description: "See how dyadic patterns are being used"
+      pattern: |
+        results = searcher.hybrid_search(
+            query="pattern usage",
+            patterns=["context_alignment", "session_handshake"],
+            limit=20
+        )
+
+  # FAILURE MODES & RECOVERY
+  gotchas:
+    - issue: "No results returned"
+      likely_causes:
+        - "Score threshold too high (increase if using custom threshold)"
+        - "Filters too restrictive (remove one filter at a time)"
+        - "Frontmatter not populated for older checkpoints"
+      recovery: "Start with semantic_search, then add filters incrementally"
+
+    - issue: "Too many irrelevant results"
+      likely_causes:
+        - "Query too broad"
+        - "Score threshold too low"
+      recovery: "Add domain or keyword filters to narrow scope"
+
+    - issue: "Missing expected sessions"
+      likely_causes:
+        - "Session not ingested to Qdrant"
+        - "Frontmatter metadata incomplete"
+      recovery: "Check checkpoint exists, re-ingest if needed"
+
+    - issue: "MCP tool returns 0 results but direct search works"
+      likely_causes:
+        - "MCP server not restarted after code changes"
+      recovery: "Restart Claude Code session to reload MCP server"
+
+  # SKILL COMPOSITION
+  combines_with:
+    - skill: "checkpoint_writing"
+      synergy: "Write checkpoints with good frontmatter for better future retrieval"
+
+    - skill: "session_handshake"
+      synergy: "Use memory_context for relevant session startup context"
+
+    - skill: "decision_documentation"
+      synergy: "Tag decisions with decision_types for later filtering"
+
+  # TRAINING EXAMPLES
+  examples:
+    - query: "Find all sessions where we worked on trading infrastructure"
+      solution: |
+        results = searcher.hybrid_search(
+            query="infrastructure deployment",
+            domains=["trading", "infrastructure"],
+            limit=10
+        )
+
+    - query: "What architectural decisions did we make about cloud deployment?"
+      solution: |
+        results = searcher.hybrid_search(
+            query="cloud deployment architecture",
+            decision_types=["architectural"],
+            keywords=["cloudflare", "vps"],
+            limit=5
+        )
+
+    - query: "Show me notable sessions about memory system work"
+      solution: |
+        results = searcher.hybrid_search(
+            query="memory system",
+            domains=["infrastructure", "memory"],
+            is_notable=True,
+            limit=5
+        )
+
+  # PERFORMANCE NOTES
+  performance:
+    typical_latency: "50-100ms for local Qdrant"
+    collection_size: "118+ checkpoints (growing)"
+    indexing_strategy: "Brute-force for <10k points (sufficient)"
+
+    optimization_tips:
+      - "Use domain filters when possible (reduces search space)"
+      - "Batch queries if retrieving multiple topics"
+      - "Cache frequent queries (e.g., domain list)"
+
+  # VERSION HISTORY
+  changelog:
+    - version: "1.0.0"
+      date: "2026-01-24"
+      changes:
+        - "Initial skill definition"
+        - "Hybrid search architecture documented"
+        - "Score thresholds empirically tuned (0.25/0.30)"
+        - "Frontmatter schema established"
+      session: "session_20260124_memory_hybrid_search"
+
+# METADATA FOR SKILL SYSTEM
+metadata:
+  compiled_from_session: "session_20260124_memory_hybrid_search"
+  documentation_ref: "docs/architecture/memory_hybrid_search.md"
+  code_artifacts:
+    - "core/memory/scripts/search.py"
+    - "core/memory/scripts/ingest.py"
+    - "tools/rhiz-mcp/src/memory_search.py"
+    - "tools/rhiz-mcp/src/server.py"
+  schemas:
+    - "core/memory/frontmatter_schema.yaml"
+    - "core/memory/checkpoint_template_with_frontmatter.yaml"

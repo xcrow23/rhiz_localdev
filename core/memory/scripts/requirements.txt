@@ -1,0 +1,18 @@
+# Rhiz Memory System Dependencies
+# Python 3.8+
+
+# Vector database client (flexible version for Python 3.14 compatibility)
+qdrant-client>=1.7.1
+
+# Embedding generation (CPU-optimized, no API needed)
+sentence-transformers>=2.2.2
+
+# YAML processing
+PyYAML>=6.0.1
+
+# Utility libraries
+python-dotenv>=1.0.0
+tqdm>=4.66.1
+
+# Optional: for future enhancements
+# anthropic>=0.8.0  # If we want to use Claude's API for embeddings later

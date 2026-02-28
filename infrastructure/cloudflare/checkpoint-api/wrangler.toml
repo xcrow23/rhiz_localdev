@@ -1,0 +1,29 @@
+# Rhiz Session Checkpoint API - Wrangler Configuration
+# Created: 2025-12-25
+# Deploy: wrangler deploy
+
+name = "rhiz-checkpoint-api"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "rhiz-checkpoints"
+database_id = "dcf333db-74a4-4fc4-b2ee-3e2020090c31"  # Created 2025-12-26
+
+# Optional: Qdrant endpoint for semantic search proxy
+# [vars]
+# QDRANT_ENDPOINT = "http://72.62.81.128:6333"
+
+# Routes (optional - can use workers.dev subdomain)
+# routes = [
+#   { pattern = "checkpoint.rhiz.dev/*", zone_name = "rhiz.dev" }
+# ]
+
+# Environment-specific configs
+[env.production]
+name = "rhiz-checkpoint-api"
+
+[env.staging]
+name = "rhiz-checkpoint-api-staging"

@@ -1,0 +1,32 @@
+# Fathom Trading Pairs Configuration
+
+# Primary pairs for trading
+primary_pairs:
+  - pair: "BTC/USD"
+    kraken_symbol: "XBTUSD"
+    min_order_size: 0.0001
+    precision: 8
+    notes: "Primary learning pair despite high competition"
+
+  - pair: "ETH/USD"
+    kraken_symbol: "ETHUSD"
+    min_order_size: 0.001
+    precision: 8
+    notes: "Alternative to BTC with good liquidity"
+
+# Watchlist pairs (not trading, just monitoring)
+watchlist:
+  - pair: "ADA/USD"
+    kraken_symbol: "ADAUSD"
+
+  - pair: "SOL/USD"
+    kraken_symbol: "SOLUSD"
+
+  - pair: "DOT/USD"
+    kraken_symbol: "DOTUSD"
+
+# Kraken-specific mappings
+kraken_mappings:
+  "BTC": "XBT"  # Kraken uses XBT instead of BTC
+  "BTC/USD": "XBTUSD"
+  "ETH/USD": "ETHUSD"

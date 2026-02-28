@@ -1,0 +1,53 @@
+# Fathom Safety Limits Configuration
+
+# Order size limits (USD)
+order_limits:
+  max_order_usd: 50.0      # Maximum order size during learning phase
+  min_order_usd: 1.0       # Minimum order size (Kraken minimum)
+
+  # Confirmation thresholds
+  confirmation_threshold: 20.0  # Orders > $20 require Captain confirmation
+
+  # Phase-based limits
+  phases:
+    learning:
+      max_order: 50.0
+      max_daily_volume: 200.0
+    testing:
+      max_order: 100.0
+      max_daily_volume: 500.0
+    production:
+      max_order: 500.0
+      max_daily_volume: 2000.0
+
+# Rate limiting configuration
+rate_limits:
+  # Kraken verification tiers
+  tiers:
+    starter:
+      calls_per_minute: 15
+      burst: 5
+    intermediate:
+      calls_per_minute: 20
+      burst: 8
+    pro:
+      calls_per_minute: 20
+      burst: 10
+
+  # Current tier (override with FATHOM_KRAKEN_TIER env var)
+  default_tier: "starter"
+
+# Risk management
+risk:
+  # Maximum portfolio allocation per asset (percentage)
+  max_allocation_pct: 50.0
+
+  # Stop loss parameters
+  stop_loss:
+    enabled: false  # Disabled by default during learning
+    default_pct: 5.0
+
+  # Take profit parameters
+  take_profit:
+    enabled: false
+    default_pct: 10.0

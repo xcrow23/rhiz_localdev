@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=America/Chicago
+      - N8N_LOG_LEVEL=info
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - rhiz_network
+
+volumes:
+  n8n_data:
+    name: rhiz_n8n_data
+
+networks:
+  rhiz_network:
+    name: rhiz_network
+    driver: bridge

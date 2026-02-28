@@ -1,0 +1,108 @@
+# Rhiz Primitive: Exchange Connection Check
+# Type: Verification primitive
+# Purpose: Confirm exchange API connectivity before operations
+
+schema_version: "1.0.0"
+
+primitive:
+  name: "exchange_connection_check"
+  version: "0.1.0"
+  type: "verification"
+  
+  description: |
+    Verifies that an exchange connector is properly configured and responsive.
+    This is a prerequisite check before any exchange-dependent operations.
+    Returns connectivity status and diagnostic information if failed.
+  
+  # Primitives are simpler than skills - no recognition layer needed
+  # They are called explicitly by skills, not triggered by patterns
+
+interface:
+  inputs:
+    - name: "connector_name"
+      type: "string"
+      required: true
+      description: "Name of the Hummingbot connector to check (e.g., 'kraken')"
+  
+  outputs:
+    - name: "status"
+      type: "object"
+      description: |
+        {
+          connected: boolean,
+          latency_ms: number | null,
+          error: string | null,
+          diagnostics: {
+            api_key_valid: boolean,
+            permissions: string[],
+            rate_limit_remaining: number | null
+          }
+        }
+
+tool_dependencies:
+  - name: "hummingbot"
+    type: "mcp"
+    tools_used:
+      - "get_portfolio_overview"  # Used as connectivity test
+
+implementation:
+  language: "pseudocode"
+  code: |
+    function exchange_connection_check(connector_name):
+      start_time = now()
+      
+      try:
+        # Attempt a lightweight read operation
+        result = hummingbot.get_portfolio_overview(connector=connector_name)
+        
+        latency = now() - start_time
+        
+        return {
+          connected: true,
+          latency_ms: latency,
+          error: null,
+          diagnostics: {
+            api_key_valid: true,
+            permissions: extract_permissions(result),
+            rate_limit_remaining: extract_rate_limit(result)
+          }
+        }
+      
+      catch AuthenticationError:
+        return {
+          connected: false,
+          latency_ms: null,
+          error: "Authentication failed - check API key and secret",
+          diagnostics: { api_key_valid: false }
+        }
+      
+      catch TimeoutError:
+        return {
+          connected: false,
+          latency_ms: null,
+          error: "Connection timeout - exchange may be unreachable",
+          diagnostics: {}
+        }
+      
+      catch error:
+        return {
+          connected: false,
+          latency_ms: null,
+          error: error.message,
+          diagnostics: {}
+        }
+
+failure_modes:
+  - condition: "API credentials invalid"
+    recovery: "Guide user through credential refresh process"
+  
+  - condition: "Exchange under maintenance"
+    recovery: "Check exchange status page, wait and retry"
+  
+  - condition: "Network unreachable"
+    recovery: "Check local network, DNS resolution"
+
+metadata:
+  created: "2025-12-17"
+  created_by: "collaborative"
+  status: "draft"

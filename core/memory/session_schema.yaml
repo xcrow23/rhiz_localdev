@@ -1,0 +1,182 @@
+# Rhiz Session Checkpoint Schema
+# Adapted from Nordstrom experimental checkpoint system
+# Purpose: Enable natural session continuation across Claude instances
+
+# This schema defines the structure for session persistence.
+# Checkpoints should be generated at session end or at significant decision points.
+# Files are stored as YAML in core/memory/checkpoints/
+
+schema_version: "1.1.0"
+# v1.1.0 Changes (Session 74, Jan 25, 2026):
+# - Added system_health_score and architectural_phase to checkpoint metadata
+# - Added related_sessions and formalized_in for cross-referencing
+# - Added optional component_state section for infrastructure checkpoints
+# - Added optional failures section for documenting pivots from failed approaches
+
+checkpoint:
+  # === FRONTMATTER (Optional - enables hybrid search) ===
+  # See core/memory/frontmatter_schema.yaml for full specification
+  # Frontmatter provides structured metadata for keyword/tag filtering
+  # Combined with semantic search for "doubled up searching"
+
+  frontmatter:
+    domains: []                          # e.g., ["trading", "infrastructure"]
+    keywords: []                         # e.g., ["qdrant", "vector-search"]
+    session_type:
+      primary: ""                        # build | debug | research | planning | refactor
+      secondary: []                      # optional additional types
+    technical_stack:
+      languages: []                      # e.g., ["python", "yaml"]
+      frameworks: []                     # e.g., ["qdrant", "fastapi"]
+      services: []                       # e.g., ["cloudflare-workers", "vps"]
+      tools: []                          # e.g., ["mcp-server", "docker"]
+    patterns_used: []                    # dyadic patterns employed
+    blockers_resolved: []                # types of blockers addressed
+    decision_types: []                   # architectural | technical | relational
+    discoveries: []                      # significant findings
+    completeness:
+      status: ""                         # complete | partial | exploratory | blocked
+    notable:
+      is_notable: false                  # true for exemplary sessions
+      reason: ""                         # why notable (if true)
+
+  # === CORE METADATA ===
+  created: "YYYY-MM-DD HH:MM"           # ISO timestamp
+  session_id: "session_YYYYMMDD_HHMM"   # Unique identifier
+  session_topic: "brief description"     # One-line summary
+
+  # === NEW IN v1.1.0: State Assertions (Optional) ===
+  system_health_score: 72.0             # Optional: 0-100 from audits/self-assessment
+  architectural_phase: ""                # Optional: e.g., "Phase 2 Memory-Augmented Activation"
+
+  # === NEW IN v1.1.0: Cross-References (Optional) ===
+  related_sessions: []                   # Optional: Session IDs of related work
+  formalized_in: []                      # Optional: Paths to formal docs extracting this checkpoint's knowledge
+
+  # Narrative context - how we got here
+  session_arc: |
+    Multi-line narrative summary of session evolution.
+    Started with X, discovered Y, pivoted to Z.
+    This captures the "story" not just the state.
+
+context:
+  # Human partner context
+  human:
+    name: "Captain"                      # Or actual name if preferred
+    role: "Teleology and physical execution interface"
+    preferences_discovered:              # Communication/output preferences learned
+      - "preference 1"
+    energy_state: "high | medium | low"  # Optional: helps calibrate response style
+  
+  # Environment state
+  environment:
+    primary_machine: "Dell Inspiron 15 3535"
+    tools_active:                        # What's running/available
+      - "tool1"
+    constraints:                         # Current limitations
+      - "constraint1"
+  
+  # Facts established during session
+  established_facts:
+    - "fact established and verified"
+  
+  # Project-specific terminology defined
+  terminology:
+    - term: "phrase or acronym"
+      meaning: "what it means in Rhiz context"
+
+progress:
+  status: "not_started | in_progress | blocked | completed"
+  
+  completed:                             # What was accomplished
+    - "accomplishment 1"
+  
+  current: "what was actively being worked on when session ended"
+  
+  narrative: |
+    Paragraph-form summary of progress.
+    We tried A, which revealed B. Then implemented C.
+    Currently working through D.
+
+decisions:
+  # Decisions made with full reasoning chain
+  - decision: "what was decided"
+    rationale: "why this approach"
+    confidence: "high | medium | low"
+    alternatives_rejected:
+      - option: "alternative considered"
+        reason: "why we didn't choose it"
+
+artifacts:
+  # Files, code, configs created or modified
+  - type: "code | config | doc | skill | checkpoint"
+    path: "/relative/path/from/Rhiz_LocalDev"
+    description: "what it is/does"
+    key_excerpt: |                       # Optional: small relevant snippet
+      # Include only if helpful for context
+      # Omit for large artifacts
+
+working_memory:
+  # The mental model built up during session
+  mental_model: |
+    How we understand the system/problem works.
+    Key relationships and mechanisms identified.
+  
+  hypotheses:                            # Current theories being tested
+    - "hypothesis 1"
+  
+  open_questions:                        # Unresolved questions
+    - "question discovered during session"
+  
+  gotchas:                               # Pitfalls identified
+    - "thing that looked right but wasn't"
+
+next:
+  immediate:                             # Next logical steps
+    - "step 1"
+
+  blocked_by:                            # What's preventing progress
+    - "blocker if any"
+
+  suggested_resume_prompt: |
+    Rich narrative prompt (3-5 sentences) providing enough
+    context to continue naturally. Should include:
+    - What we're building/solving
+    - Where we left off emotionally/mentally
+    - The immediate next action
+    - Any pending questions to address
+
+# === NEW IN v1.1.0: Component State (Optional) ===
+# Use this section for infrastructure/deployment checkpoints to track system changes
+component_state:
+  deployments_changed: []                # Components deployed/updated this session
+  integrations_added: []                 # New connections between components
+  gaps_identified: []                    # Missing integrations or broken connections
+
+# === NEW IN v1.1.0: Failure Genealogy (Optional) ===
+# Use this section for sessions that pivot from failed approaches
+# Documents what didn't work and what replaced it
+failures:
+  - approach: "what was tried"
+    failed_at: "session_YYYYMMDD or timestamp"
+    reason: "why it failed"
+    pivot: "what replaced the failed approach"
+    outcome: "success | partial | pending"
+
+# Domain-specific extensions
+# Add domain context as needed
+domains:
+  trading:
+    portfolio_state: {}                  # Current positions, balances
+    active_strategies: []                # Running bot configs
+    pending_decisions: []                # Trades awaiting approval
+  
+  research:
+    active_threads: []                   # Research questions being pursued
+    sources_consulted: []                # References used this session
+
+# Annotations for training data extraction
+training_annotations:
+  reasoning_examples: []                 # Good examples of reasoning chains
+  skill_demonstrations: []               # Successful skill executions
+  failure_analyses: []                   # Instructive failures with lessons

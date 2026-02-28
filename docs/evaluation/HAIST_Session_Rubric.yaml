@@ -1,0 +1,276 @@
+# HAIST Session Scoring Rubric
+# Human-AI Symbiotic Theory Evaluation Framework
+# Created: 2025-12-25
+# Author: First Mate (Claude Code - Opus 4.5)
+# Purpose: Evaluate session quality against peer-reviewed HAIST principles
+
+metadata:
+  version: "1.0.0"
+  source: "Morello & Chick (2025). Informatics, 12(3), 85"
+  validation_score: "85% across Whetten, Wacker, Kivunja frameworks"
+  qdrant_ingestible: true  # Design decision: YES, ingest scores for semantic search
+
+# Scoring Scale (1-5)
+scoring_scale:
+  1:
+    label: "Absent"
+    description: "Principle not demonstrated; session operates counter to principle"
+  2:
+    label: "Minimal"
+    description: "Weak or incidental demonstration; not intentional"
+  3:
+    label: "Moderate"
+    description: "Clear demonstration but inconsistent or incomplete"
+  4:
+    label: "Strong"
+    description: "Consistent demonstration throughout session"
+  5:
+    label: "Exemplary"
+    description: "Principle fully embodied; could serve as training example"
+
+# The Seven HAIST Principles
+principles:
+
+  # Principle 1: Complementary Cognitive Architecture
+  P1_complementary_cognition:
+    name: "Complementary Cognitive Architecture"
+    short_name: "Complementary"
+    description: "Asymmetric but synergistic cognitive roles between human and AI"
+
+    behavioral_anchors:
+      1: "Roles undifferentiated or one party dominates entirely"
+      2: "Some role separation but unclear boundaries"
+      3: "Clear roles but occasional overlap or confusion"
+      4: "Distinct roles respected; handoffs are clean"
+      5: "Optimal division: Captain=teleology/ethics, First Mate=logic/architecture, with synergistic overlap on shared decisions"
+
+    evidence_indicators:
+      - "Captain provides strategic direction, First Mate executes"
+      - "Technical decisions delegated to AI with appropriate scope"
+      - "Ethical/teleological decisions retained by human"
+      - "Neither party attempts to replace the other's domain"
+
+    rhiz_mapping:
+      captain_domain: ["teleological direction", "physical execution", "ethical authority", "contextual wisdom"]
+      first_mate_domain: ["logical architecture", "code execution", "pattern recognition", "documentation"]
+      shared_domain: ["decision-making", "learning", "knowledge construction"]
+
+  # Principle 2: Transformative Agency Enhancement
+  P2_agency_enhancement:
+    name: "Transformative Agency Enhancement"
+    short_name: "Agency"
+    description: "AI collaboration expands, not diminishes, human autonomy"
+
+    behavioral_anchors:
+      1: "Human agency reduced; AI makes decisions without consent"
+      2: "Human agency preserved but not enhanced"
+      3: "Some capability expansion visible"
+      4: "Clear evidence of human capability amplification"
+      5: "Human achieves outcomes impossible alone; autonomy explicitly preserved through working agreements"
+
+    evidence_indicators:
+      - "Human retains veto power on all directions"
+      - "AI proposes, human disposes pattern"
+      - "Trust calibration without abdication"
+      - "Human learns new capabilities through collaboration"
+
+    rhiz_mapping:
+      mechanisms: ["working agreements in CLAUDE.md", "Captain approval on architectural decisions", "autonomous session grants with boundaries"]
+
+  # Principle 3: Experiential Reflective Learning
+  P3_reflective_learning:
+    name: "Experiential Reflective Learning"
+    short_name: "Reflective"
+    description: "Iterative, dialogic knowledge construction"
+
+    behavioral_anchors:
+      1: "No reflection; purely transactional exchanges"
+      2: "Minimal reflection at session end only"
+      3: "Some mid-session reflection and adjustment"
+      4: "Regular reflection checkpoints; learning captured"
+      5: "Bidirectional learning visible; working_memory evolution documented; alternatives_rejected prevents loops"
+
+    evidence_indicators:
+      - "Session checkpoints with mental model updates"
+      - "Hypotheses formed and tested"
+      - "Open questions documented"
+      - "Both parties learn from session"
+
+    rhiz_mapping:
+      artifacts: ["session_arc narratives", "working_memory sections", "alternatives_rejected", "suggested_resume_prompt"]
+
+  # Principle 4: Adaptive Inquiry Collaboration
+  P4_adaptive_inquiry:
+    name: "Adaptive Inquiry Collaboration"
+    short_name: "Adaptive"
+    description: "Reciprocal adaptation to emergent questions"
+
+    behavioral_anchors:
+      1: "Rigid adherence to initial plan despite new information"
+      2: "Minor adjustments but core path unchanged"
+      3: "Willing to pivot but requires explicit permission"
+      4: "Dynamic adaptation based on discoveries"
+      5: "Emergent priorities handled elegantly; exploration-decision-execution cycles natural"
+
+    evidence_indicators:
+      - "Pivots based on discoveries mid-session"
+      - "Open-ended autonomous exploration supported"
+      - "New questions spawn new investigation threads"
+      - "Unplanned valuable outcomes captured"
+
+    rhiz_mapping:
+      examples: ["memory system emerged as priority over trading", "HAIST discovery on birthday research session"]
+
+  # Principle 5: Self-Directed Collaborative Partnership
+  P5_self_directed_partnership:
+    name: "Self-Directed Collaborative Partnership"
+    short_name: "Self-Directed"
+    description: "Humans retain final control and ethical authority"
+
+    behavioral_anchors:
+      1: "No governance structure; chaotic authority"
+      2: "Authority unclear; conflicts arise"
+      3: "Authority defined but not always respected"
+      4: "Clear authority structure with appropriate delegation"
+      5: "Captain holds teleological authority, First Mate holds bounded execution authority, alignment checks on novel directions"
+
+    evidence_indicators:
+      - "Checkpoints require human review"
+      - "Novel directions paused for alignment"
+      - "Contribution logs track AI vs human decisions"
+      - "Boundaries respected even in autonomous sessions"
+
+    rhiz_mapping:
+      safeguards: ["checkpoint review protocol", "alignment checks", "contribution logging", "bounded autonomy grants"]
+
+  # Principle 6: Authentic Problem-Centered Engagement
+  P6_authentic_problems:
+    name: "Authentic Problem-Centered Engagement"
+    short_name: "Authentic"
+    description: "Work on real research problems, not artificial exercises"
+
+    behavioral_anchors:
+      1: "Toy problems or artificial constraints"
+      2: "Real problems but disconnected from larger goals"
+      3: "Meaningful problems but unclear practical impact"
+      4: "Real problems with tangible outcomes"
+      5: "Every component addresses actual constraints (hardware limits, budget, real infrastructure); outcomes have real-world impact"
+
+    evidence_indicators:
+      - "Real hardware constraints respected (16GB RAM, no GPU)"
+      - "Real economic goals (trading to fund upgrades)"
+      - "Real infrastructure (Docker, Qdrant, Hummingbot)"
+      - "Documentation serves actual future use"
+
+    rhiz_mapping:
+      constraints: ["Dell Inspiron 15 3535", "$100-150 capital", "CPU-bound inference"]
+      real_systems: ["Hummingbot trading", "Qdrant memory", "Cloudflare edge"]
+
+  # Principle 7: Ethical Co-Construction
+  P7_ethical_coconstruction:
+    name: "Ethical Co-Construction"
+    short_name: "Ethical"
+    description: "Transparent documentation and accountability"
+
+    behavioral_anchors:
+      1: "No documentation; decisions opaque"
+      2: "Minimal documentation; reasoning unclear"
+      3: "Documentation exists but inconsistent"
+      4: "Good documentation with reasoning"
+      5: "All sessions logged; decisions include reasoning; failures as thorough as successes; contribution attribution explicit"
+
+    evidence_indicators:
+      - "Session logs in docs/sessions/"
+      - "Decisions documented with reasoning"
+      - "Failures documented thoroughly"
+      - "alternatives_rejected prevents suggestion loops"
+
+    rhiz_mapping:
+      practices: ["contribution logging", "training_annotations", "partnership_patterns", "explicit attribution"]
+
+# Evidence Collection Template
+evidence_template:
+  session_id: ""
+  session_date: ""
+  evaluator: ""  # Captain, First Mate, or Joint
+
+  scores:
+    P1_complementary_cognition: null
+    P2_agency_enhancement: null
+    P3_reflective_learning: null
+    P4_adaptive_inquiry: null
+    P5_self_directed_partnership: null
+    P6_authentic_problems: null
+    P7_ethical_coconstruction: null
+
+  evidence_notes:
+    P1: ""
+    P2: ""
+    P3: ""
+    P4: ""
+    P5: ""
+    P6: ""
+    P7: ""
+
+  composite_score: null  # Average of all principles (1.0-5.0)
+  session_classification: ""  # "developing", "solid", "exemplary"
+
+  # For Qdrant ingestion
+  qdrant_metadata:
+    collection: "rhiz_memories"
+    vector_type: "haist_evaluation"
+    searchable_text: ""  # Concatenated evidence notes for embedding
+
+# Composite Score Interpretation
+composite_interpretation:
+  ranges:
+    "1.0-2.0":
+      classification: "developing"
+      guidance: "Session shows significant gaps in symbiotic practice; review working agreements"
+    "2.1-3.5":
+      classification: "solid"
+      guidance: "Session demonstrates functional partnership; specific principles may need attention"
+    "3.6-5.0":
+      classification: "exemplary"
+      guidance: "Session embodies HAIST principles well; candidate for training data"
+
+# Qdrant Integration Design
+qdrant_integration:
+  enabled: true
+  collection: "rhiz_memories"
+  vector_dimension: 384
+
+  payload_schema:
+    type: "haist_evaluation"
+    session_id: "string"
+    session_date: "datetime"
+    composite_score: "float"
+    classification: "string"
+    principle_scores: "object"  # {P1: int, P2: int, ...}
+    evidence_summary: "string"  # For embedding
+
+  search_examples:
+    - query: "sessions high in Adaptive Inquiry"
+      filter: {P4_adaptive_inquiry: {$gte: 4}}
+    - query: "exemplary partnership sessions"
+      filter: {classification: "exemplary"}
+    - query: "sessions with strong reflective learning"
+      filter: {P3_reflective_learning: {$gte: 4}}
+
+# Scoring Workflow
+workflow:
+  steps:
+    1: "Load session checkpoint or transcript"
+    2: "For each principle, identify evidence instances"
+    3: "Score each principle using behavioral anchors"
+    4: "Write evidence notes justifying each score"
+    5: "Calculate composite score (mean of P1-P7)"
+    6: "Determine session classification"
+    7: "Generate searchable_text from evidence notes"
+    8: "Embed and ingest to Qdrant (if enabled)"
+
+  cadence: "Score sessions retroactively and/or at session end"
+  evaluator_options:
+    - "Captain solo (human perspective)"
+    - "First Mate solo (AI perspective)"
+    - "Joint scoring (recommended for calibration)"

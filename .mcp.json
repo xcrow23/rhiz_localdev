@@ -1,0 +1,70 @@
+{
+  "mcpServers": {
+    "fathom-commander": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["server.py"],
+      "cwd": "C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\domains\\trading\\fathom_commander",
+      "env": {
+        "KRAKEN_API_KEY": "${KRAKEN_API_KEY}",
+        "KRAKEN_SECRET_KEY": "${KRAKEN_SECRET_KEY}"
+      }
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "hostinger-api": {
+      "type": "stdio",
+      "command": "hostinger-api-mcp",
+      "env": {
+        "APITOKEN": "${HOSTINGER_API_TOKEN}",
+        "DEBUG": "false"
+      }
+    },
+    "n8n": {
+      "type": "stdio",
+      "command": "C:\\Users\\dread\\AppData\\Roaming\\Python\\Python314\\Scripts\\n8n-mcp-server.exe",
+      "env": {
+        "N8N_HOST": "http://localhost:5678",
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjODY2ZWY4Yi04Mjc4LTQ0NjMtYTViOS04N2ZmNzIyNzlhZmYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY3OTMyNTkxLCJleHAiOjE3NzU2MjQ0MDB9.IYh1uQzdMHkY1Vx4lIJg-tF_mRNfGPW40PlECtnv3Zc"
+      }
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "env": {}
+    },
+    "rhiz-mcp": {
+      "type": "stdio",
+      "command": "C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\tools\\rhiz-mcp\\venv\\Scripts\\python.exe",
+      "args": ["C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\tools\\rhiz-mcp\\run_server.py"],
+      "env": {
+        "RHIZ_ROOT": "C:\\Users\\dread\\Documents\\Rhiz_LocalDev"
+      }
+    },
+    "memory-mcp": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\tools\\memory-mcp\\server.py"],
+      "env": {
+        "QDRANT_HOST": "localhost",
+        "QDRANT_PORT": "6333",
+        "COLLECTION_NAME": "rhiz_memories"
+      }
+    },
+    "openai-image-gen": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["imagegen-mcp", "--models", "dall-e-3"],
+      "env": {
+        "OPENAI_API_KEY": "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"
+      }
+    }
+  }
+}

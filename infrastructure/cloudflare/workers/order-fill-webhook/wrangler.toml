@@ -1,0 +1,16 @@
+name = "rhiz-order-fill-webhook"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# HTTP-triggered webhook (no cron schedule)
+# Endpoint: https://rhiz-order-fill-webhook.dreadcrownest.workers.dev
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "rhiz-trading"
+database_id = "1a5349f5-8ce5-4c74-8491-2d4d626b982a"
+
+# Secret: WEBHOOK_API_KEY
+# Set via: wrangler secret put WEBHOOK_API_KEY
+# Required for authentication (X-API-Key header)

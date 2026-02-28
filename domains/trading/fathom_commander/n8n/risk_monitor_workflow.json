@@ -1,0 +1,133 @@
+{
+  "name": "Rhiz Risk Monitor",
+  "active": true,
+  "isArchived": false,
+  "versionId": "c3d4e5f6-3333-4444-5555-666677778888",
+  "nodes": [
+    {
+      "id": "trigger-2h",
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "cronExpression", "expression": "0 */2 * * *"}]
+        }
+      },
+      "name": "Every 2 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "id": "get-portfolio",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/portfolio/summary",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get Portfolio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "id": "get-status",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/",
+        "options": {"timeout": 10000}
+      },
+      "name": "Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 500]
+    },
+    {
+      "id": "risk-analysis",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Risk monitoring logic\nconst portfolio = $('Get Portfolio').first().json;\nconst status = $('Get Status').first().json;\n\nconst equity = portfolio.portfolio?.equity || 0;\nconst totalValue = portfolio.portfolio?.total_value_usd || 0;\nconst tradesRemaining = status.today?.trades_remaining || 10;\nconst tradingHalted = status.trading_halted || false;\n\n// Risk thresholds\nconst INITIAL_CAPITAL = 50;\nconst KILL_SWITCH_PCT = 5;\nconst WARNING_PCT = 3;\n\nconst drawdownPct = ((INITIAL_CAPITAL - equity) / INITIAL_CAPITAL) * 100;\nconst isKillSwitch = drawdownPct >= KILL_SWITCH_PCT;\nconst isWarning = drawdownPct >= WARNING_PCT;\n\nlet action = 'normal';\nlet alertLevel = 'info';\nlet message = '';\n\nif (tradingHalted) {\n  action = 'halted';\n  alertLevel = 'critical';\n  message = `Trading already halted: ${status.halt_reason}`;\n} else if (isKillSwitch) {\n  action = 'kill_switch';\n  alertLevel = 'critical';\n  message = `KILL SWITCH: ${drawdownPct.toFixed(1)}% drawdown exceeds ${KILL_SWITCH_PCT}% limit`;\n} else if (isWarning) {\n  action = 'warning';\n  alertLevel = 'warning';\n  message = `WARNING: ${drawdownPct.toFixed(1)}% drawdown approaching limit`;\n} else {\n  message = `Normal: Equity $${equity.toFixed(2)}, ${drawdownPct > 0 ? drawdownPct.toFixed(1) + '% down' : 'no drawdown'}`;\n}\n\nreturn [{\n  json: {\n    timestamp: new Date().toISOString(),\n    action,\n    alert_level: alertLevel,\n    message,\n    metrics: {\n      equity,\n      total_value_usd: totalValue,\n      initial_capital: INITIAL_CAPITAL,\n      drawdown_pct: drawdownPct,\n      trades_remaining: tradesRemaining,\n      trading_halted: tradingHalted\n    },\n    thresholds: {\n      kill_switch_pct: KILL_SWITCH_PCT,\n      warning_pct: WARNING_PCT\n    }\n  }\n}];"
+      },
+      "name": "Risk Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 400]
+    },
+    {
+      "id": "kill-switch-check",
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{
+            "id": "kill-switch",
+            "leftValue": "={{ $json.action }}",
+            "rightValue": "kill_switch",
+            "operator": {"type": "string", "operation": "equals"}
+          }],
+          "combinator": "and"
+        }
+      },
+      "name": "Kill Switch?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [970, 400]
+    },
+    {
+      "id": "halt-trading",
+      "parameters": {
+        "method": "POST",
+        "url": "http://rhiz_fathom_commander:8765/mode",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"mode\": \"paper\",\n  \"reason\": \"Kill switch triggered by risk monitor\"\n}",
+        "options": {"timeout": 10000}
+      },
+      "name": "Halt Trading",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1190, 300]
+    },
+    {
+      "id": "log-kill-switch",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const risk = $('Risk Analysis').first().json;\nconsole.log('=== KILL SWITCH ACTIVATED ===');\nconsole.log('Drawdown:', risk.metrics.drawdown_pct.toFixed(1) + '%');\nconsole.log('Equity:', '$' + risk.metrics.equity.toFixed(2));\nconsole.log('Action: Trading halted');\nreturn [{ json: { alert_type: 'kill_switch', ...risk, trading_halted: true } }];"
+      },
+      "name": "Log Kill Switch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1410, 300]
+    },
+    {
+      "id": "log-status",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const risk = $('Risk Analysis').first().json;\nif (risk.alert_level === 'warning') {\n  console.log('=== RISK WARNING ===');\n  console.log(risk.message);\n} else {\n  console.log('=== RISK CHECK: OK ===');\n  console.log('Equity: $' + risk.metrics.equity.toFixed(2));\n}\nreturn [{ json: { logged: true, ...risk } }];"
+      },
+      "name": "Log Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1190, 500]
+    }
+  ],
+  "connections": {
+    "Every 2 Hours": {
+      "main": [[
+        {"node": "Get Portfolio", "type": "main", "index": 0},
+        {"node": "Get Status", "type": "main", "index": 0}
+      ]]
+    },
+    "Get Portfolio": {"main": [[{"node": "Risk Analysis", "type": "main", "index": 0}]]},
+    "Get Status": {"main": [[{"node": "Risk Analysis", "type": "main", "index": 0}]]},
+    "Risk Analysis": {"main": [[{"node": "Kill Switch?", "type": "main", "index": 0}]]},
+    "Kill Switch?": {
+      "main": [
+        [{"node": "Halt Trading", "type": "main", "index": 0}],
+        [{"node": "Log Status", "type": "main", "index": 0}]
+      ]
+    },
+    "Halt Trading": {"main": [[{"node": "Log Kill Switch", "type": "main", "index": 0}]]}
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "timezone": "America/Chicago"
+  }
+}

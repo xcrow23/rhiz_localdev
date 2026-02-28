@@ -1,0 +1,159 @@
+{
+  "name": "Rhiz Portfolio Rebalancer",
+  "active": true,
+  "isArchived": false,
+  "versionId": "d4e5f6a7-4444-5555-6666-777788889999",
+  "nodes": [
+    {
+      "id": "trigger-8h",
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "cronExpression", "expression": "0 */8 * * *"}]
+        }
+      },
+      "name": "Every 8 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "id": "get-portfolio",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/portfolio/balance",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get Portfolio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 200]
+    },
+    {
+      "id": "get-trades",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/orders/history?count=50",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get Trade History",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 400]
+    },
+    {
+      "id": "get-ticker",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ticker?pair=XXBTZUSD",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get BTC Price",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 600]
+    },
+    {
+      "id": "get-status",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/",
+        "options": {"timeout": 10000}
+      },
+      "name": "Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 800]
+    },
+    {
+      "id": "rebalance-logic",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Portfolio Rebalancer Logic\nconst portfolio = $('Get Portfolio').first().json;\nconst trades = $('Get Trade History').first().json;\nconst ticker = $('Get BTC Price').first().json;\nconst status = $('Get Status').first().json;\n\n// Safety check\nif (status.trading_halted) {\n  return [{ json: { action: 'skip', reason: 'Trading halted: ' + status.halt_reason } }];\n}\n\n// Get current holdings\nconst usdBalance = portfolio.balances?.ZUSD?.amount || 0;\nconst btcBalance = portfolio.balances?.XXBT?.amount || 0;\nconst currentPrice = ticker.tickers?.XXBTZUSD?.price || 0;\n\nif (!currentPrice || currentPrice <= 0) {\n  return [{ json: { action: 'skip', reason: 'Could not get current price' } }];\n}\n\n// Calculate portfolio composition\nconst btcValueUsd = btcBalance * currentPrice;\nconst totalValueUsd = usdBalance + btcValueUsd;\nconst btcPct = (btcValueUsd / totalValueUsd) * 100;\n\n// Calculate cost basis from trade history\nlet totalBtcBought = 0;\nlet totalCostUsd = 0;\nconst btcTrades = (trades.trades || []).filter(t => t.pair === 'XXBTZUSD' && t.side === 'buy');\nfor (const trade of btcTrades) {\n  totalBtcBought += parseFloat(trade.volume);\n  totalCostUsd += parseFloat(trade.cost);\n}\nconst avgCostBasis = totalBtcBought > 0 ? totalCostUsd / totalBtcBought : currentPrice;\nconst unrealizedPnlPct = ((currentPrice - avgCostBasis) / avgCostBasis) * 100;\n\n// Rebalance thresholds\nconst TARGET_BTC_PCT = 50;  // Target 50% in BTC\nconst MAX_BTC_PCT = 65;     // Rebalance if BTC > 65%\nconst MIN_PROFIT_PCT = 5;   // Only take profit if up > 5%\nconst SELL_PORTION = 0.25;  // Sell 25% of excess\n\nlet action = 'skip';\nlet sellAmount = 0;\nlet reason = '';\n\n// Check if rebalance needed\nif (btcPct > MAX_BTC_PCT && unrealizedPnlPct > MIN_PROFIT_PCT) {\n  // Calculate how much to sell to get back toward target\n  const excessBtcValue = btcValueUsd - (totalValueUsd * TARGET_BTC_PCT / 100);\n  const sellValueUsd = excessBtcValue * SELL_PORTION;\n  sellAmount = sellValueUsd / currentPrice;\n  \n  // Only sell if meaningful amount (> $5)\n  if (sellValueUsd >= 5) {\n    action = 'sell';\n    reason = `Rebalance: BTC at ${btcPct.toFixed(1)}% (>${MAX_BTC_PCT}%), up ${unrealizedPnlPct.toFixed(1)}% from cost basis. Selling $${sellValueUsd.toFixed(2)} worth.`;\n  } else {\n    reason = `Near threshold but sell amount too small ($${sellValueUsd.toFixed(2)}). Waiting.`;\n  }\n} else if (btcPct > MAX_BTC_PCT) {\n  reason = `BTC at ${btcPct.toFixed(1)}% but only ${unrealizedPnlPct.toFixed(1)}% profit. Need >${MIN_PROFIT_PCT}% to sell.`;\n} else {\n  reason = `Balanced: BTC ${btcPct.toFixed(1)}%, profit ${unrealizedPnlPct.toFixed(1)}%. No action needed.`;\n}\n\nreturn [{\n  json: {\n    action,\n    sell_amount_btc: sellAmount,\n    reason,\n    portfolio: {\n      usd: usdBalance,\n      btc: btcBalance,\n      btc_value_usd: btcValueUsd,\n      total_value_usd: totalValueUsd,\n      btc_pct: btcPct\n    },\n    cost_basis: {\n      avg_price: avgCostBasis,\n      current_price: currentPrice,\n      unrealized_pnl_pct: unrealizedPnlPct,\n      total_invested: totalCostUsd\n    },\n    thresholds: {\n      target_btc_pct: TARGET_BTC_PCT,\n      max_btc_pct: MAX_BTC_PCT,\n      min_profit_pct: MIN_PROFIT_PCT\n    },\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Rebalance Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 400]
+    },
+    {
+      "id": "should-sell-check",
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{
+            "id": "should-sell",
+            "leftValue": "={{ $json.action }}",
+            "rightValue": "sell",
+            "operator": {"type": "string", "operation": "equals"}
+          }],
+          "combinator": "and"
+        }
+      },
+      "name": "Should Sell?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [970, 400]
+    },
+    {
+      "id": "execute-sell",
+      "parameters": {
+        "method": "POST",
+        "url": "http://rhiz_fathom_commander:8765/trade/execute",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"sell\",\n  \"symbol\": \"BTC/USD\",\n  \"amount_usd\": {{ Math.round($json.sell_amount_btc * $json.cost_basis.current_price) }},\n  \"reason\": \"Portfolio Rebalancer: {{ $json.reason }}\"\n}",
+        "options": {"timeout": 30000}
+      },
+      "name": "Execute Sell",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1190, 300]
+    },
+    {
+      "id": "log-sell",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const decision = $('Rebalance Logic').first().json;\nconst result = $('Execute Sell').first().json;\nconsole.log('=== REBALANCE EXECUTED ===');\nconsole.log('Action:', decision.action);\nconsole.log('Reason:', decision.reason);\nconsole.log('BTC%:', decision.portfolio.btc_pct.toFixed(1));\nconsole.log('Result:', JSON.stringify(result));\nreturn [{ json: { type: 'rebalance_sell', ...decision, result } }];"
+      },
+      "name": "Log Sell",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1410, 300]
+    },
+    {
+      "id": "log-skip",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const decision = $('Rebalance Logic').first().json;\nconsole.log('=== REBALANCE CHECK ===');\nconsole.log('Status:', decision.reason);\nconsole.log('BTC%:', decision.portfolio.btc_pct.toFixed(1));\nconsole.log('Profit%:', decision.cost_basis.unrealized_pnl_pct.toFixed(1));\nreturn [{ json: { type: 'rebalance_skip', ...decision } }];"
+      },
+      "name": "Log Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1190, 500]
+    }
+  ],
+  "connections": {
+    "Every 8 Hours": {
+      "main": [[
+        {"node": "Get Portfolio", "type": "main", "index": 0},
+        {"node": "Get Trade History", "type": "main", "index": 0},
+        {"node": "Get BTC Price", "type": "main", "index": 0},
+        {"node": "Get Status", "type": "main", "index": 0}
+      ]]
+    },
+    "Get Portfolio": {"main": [[{"node": "Rebalance Logic", "type": "main", "index": 0}]]},
+    "Get Trade History": {"main": [[{"node": "Rebalance Logic", "type": "main", "index": 0}]]},
+    "Get BTC Price": {"main": [[{"node": "Rebalance Logic", "type": "main", "index": 0}]]},
+    "Get Status": {"main": [[{"node": "Rebalance Logic", "type": "main", "index": 0}]]},
+    "Rebalance Logic": {"main": [[{"node": "Should Sell?", "type": "main", "index": 0}]]},
+    "Should Sell?": {
+      "main": [
+        [{"node": "Execute Sell", "type": "main", "index": 0}],
+        [{"node": "Log Status", "type": "main", "index": 0}]
+      ]
+    },
+    "Execute Sell": {"main": [[{"node": "Log Sell", "type": "main", "index": 0}]]}
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "timezone": "America/Chicago"
+  }
+}

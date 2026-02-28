@@ -1,0 +1,19 @@
+# Unified Trading Platform API Gateway Dependencies
+# Python 3.11+
+
+# Web framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# HTTP client for service proxying
+httpx>=0.27.0
+requests>=2.31.0
+
+# Data validation
+pydantic>=2.5.0
+
+# Qdrant client (for health checks and collection queries)
+qdrant-client>=1.7.0
+
+# Logging and monitoring
+python-json-logger>=2.0.7

@@ -1,0 +1,36 @@
+# Rhiz Project Dependencies
+# Core dependencies for memory, skills, and semantic routing
+
+# Memory & Vector Storage
+qdrant-client>=1.7.0
+sentence-transformers>=2.2.0
+
+# Skills & Semantic Routing
+pydantic>=2.0.0
+pyyaml>=6.0
+
+# Memory-Augmented Activation (Phase 2)
+mem0ai>=1.0.2
+ollama>=0.6.0  # Python client for Ollama LLM
+
+# Data Processing
+numpy>=1.24.0
+
+# MCP Server
+httpx>=0.20.0
+anyio>=3.5.0
+
+# Development & Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Optional: Local LLM Support
+# transformers>=4.35.0  # For local Hugging Face models
+# torch>=2.0.0  # For GPU acceleration (if available)
+
+# Notes:
+# - All packages tested on Python 3.14.0
+# - sentence-transformers uses all-MiniLM-L6-v2 (384-dim, CPU-optimized)
+# - mem0ai configured with Ollama (qwen2.5-coder:7b) for memory processing
+# - Qdrant runs in Docker (localhost:6333)
+# - See CLAUDE.md for hardware constraints (Dell Inspiron 15, 16GB RAM, CPU-bound)

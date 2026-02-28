@@ -1,0 +1,47 @@
+# Fathom Commander - Cloud Deployment
+# Integrates with existing Rhiz infrastructure on Hostinger VPS
+#
+# Deploy: docker compose -f docker-compose.cloud.yaml up -d
+
+services:
+  fathom-commander:
+    container_name: rhiz_fathom_commander
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "127.0.0.1:8765:8765"  # Internal only - accessed via reverse proxy
+    environment:
+      # Kraken credentials (set these via .env or secrets)
+      - KRAKEN_API_KEY=${KRAKEN_API_KEY}
+      - KRAKEN_SECRET_KEY=${KRAKEN_SECRET_KEY}
+      # Qdrant for memory (on same Docker network)
+      - FATHOM_QDRANT_URL=http://rhiz_qdrant:6333
+      # Timezone
+      - TZ=America/Chicago
+    volumes:
+      # Persist state across restarts
+      - fathom_state:/app/state
+    networks:
+      - rhiz_rhiz_network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8765/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      # Traefik labels for external access
+      - "traefik.enable=true"
+      - "traefik.http.routers.fathom.rule=Host(`fathom.${DOMAIN_NAME:-srv1206808.hstgr.cloud}`)"
+      - "traefik.http.routers.fathom.tls=true"
+      - "traefik.http.routers.fathom.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.fathom.loadbalancer.server.port=8765"
+
+volumes:
+  fathom_state:
+
+networks:
+  rhiz_rhiz_network:
+    external: true

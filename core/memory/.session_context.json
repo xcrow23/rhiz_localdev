@@ -1,0 +1,7 @@
+{
+  "search_topic": "recent session work, active domains, pending tasks",
+  "memory_available": false,
+  "memories_found": 0,
+  "relevant_sessions": [],
+  "error": "Memory search unavailable (Qdrant not reachable)"
+}

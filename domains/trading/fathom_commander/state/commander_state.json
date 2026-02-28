@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-12-29T00:00:15.100395Z",
+  "start_time": "2025-12-27T07:10:49.970872Z",
+  "mode": "live",
+  "active_strategy": "momentum_basic",
+  "positions": {},
+  "pending_approvals": {},
+  "open_orders": [],
+  "trades_today": [
+    {
+      "txid": "OTNH3O-YPWK3-5GPKUL",
+      "pair": "XXBTZUSD",
+      "side": "buy",
+      "volume": 0.00016984,
+      "price": 0,
+      "cost": 14.925114599999999,
+      "fee": 0,
+      "timestamp": "2025-12-29T00:00:15.098154Z",
+      "decision_id": 1077528376601037999,
+      "outcome": "pending"
+    }
+  ],
+  "daily_stats": {
+    "date": "2025-12-28",
+    "trades_count": 1,
+    "total_volume_usd": 14.925114599999999,
+    "realized_pnl": 0.0,
+    "wins": 0,
+    "losses": 0,
+    "largest_win": 0.0,
+    "largest_loss": 0.0
+  },
+  "last_prices": {
+    "XXBTZUSD": 87877.5
+  },
+  "last_market_update": "2025-12-29T00:00:06.363240Z",
+  "last_heartbeat": "2025-12-29T00:00:05.647248Z",
+  "consecutive_errors": 0,
+  "last_error": "",
+  "trades_remaining_today": 9,
+  "daily_loss_current": 0.0,
+  "trading_halted": false,
+  "halt_reason": ""
+}

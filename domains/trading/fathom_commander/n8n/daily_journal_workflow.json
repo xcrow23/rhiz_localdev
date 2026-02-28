@@ -1,0 +1,107 @@
+{
+  "name": "Rhiz Daily Performance Journal",
+  "active": true,
+  "isArchived": false,
+  "versionId": "e5f6a7b8-5555-6666-7777-888899990000",
+  "nodes": [
+    {
+      "id": "trigger-11pm",
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "cronExpression", "expression": "0 23 * * *"}]
+        }
+      },
+      "name": "Daily 11PM CT",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "id": "get-portfolio",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/portfolio/summary",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get Portfolio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 200]
+    },
+    {
+      "id": "get-trades",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/orders/history?count=50",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get All Trades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 400]
+    },
+    {
+      "id": "get-status",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/",
+        "options": {"timeout": 10000}
+      },
+      "name": "Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 600]
+    },
+    {
+      "id": "get-ticker",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ticker?pair=XXBTZUSD",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get BTC Price",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 800]
+    },
+    {
+      "id": "compile-journal",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Daily Performance Journal\nconst portfolio = $('Get Portfolio').first().json;\nconst trades = $('Get All Trades').first().json;\nconst status = $('Get Status').first().json;\nconst ticker = $('Get BTC Price').first().json;\n\nconst now = new Date();\nconst todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;\nconst currentPrice = ticker.tickers?.XXBTZUSD?.price || 0;\n\n// Filter today's trades\nconst todaysTrades = (trades.trades || []).filter(t => t.time >= todayStart);\n\n// Calculate metrics from all trades\nlet totalBought = 0, totalSold = 0;\nlet totalBuyCost = 0, totalSellRevenue = 0;\nlet totalFees = 0;\n\nfor (const trade of trades.trades || []) {\n  const volume = parseFloat(trade.volume);\n  const cost = parseFloat(trade.cost);\n  const fee = parseFloat(trade.fee);\n  totalFees += fee;\n  \n  if (trade.side === 'buy') {\n    totalBought += volume;\n    totalBuyCost += cost;\n  } else {\n    totalSold += volume;\n    totalSellRevenue += cost;\n  }\n}\n\n// Cost basis and P&L\nconst netBtc = totalBought - totalSold;\nconst avgCostBasis = totalBought > 0 ? totalBuyCost / totalBought : 0;\nconst currentBtcValue = netBtc * currentPrice;\nconst totalInvested = totalBuyCost - totalSellRevenue;\nconst unrealizedPnl = currentBtcValue - totalInvested;\nconst unrealizedPnlPct = totalInvested > 0 ? (unrealizedPnl / totalInvested) * 100 : 0;\n\n// Portfolio metrics\nconst equity = portfolio.portfolio?.equity || 0;\nconst totalValue = portfolio.portfolio?.total_value_usd || 0;\n\n// Today's activity summary\nconst todayBuys = todaysTrades.filter(t => t.side === 'buy');\nconst todaySells = todaysTrades.filter(t => t.side === 'sell');\nconst todayVolume = todaysTrades.reduce((sum, t) => sum + parseFloat(t.cost), 0);\nconst todayFees = todaysTrades.reduce((sum, t) => sum + parseFloat(t.fee), 0);\n\n// Journal entry\nconst journal = {\n  date: now.toISOString().split('T')[0],\n  timestamp: now.toISOString(),\n  \n  summary: {\n    total_value_usd: totalValue,\n    equity: equity,\n    btc_holdings: netBtc,\n    btc_price: currentPrice,\n    trading_halted: status.trading_halted || false\n  },\n  \n  todays_activity: {\n    trades_count: todaysTrades.length,\n    buys: todayBuys.length,\n    sells: todaySells.length,\n    volume_usd: todayVolume,\n    fees_paid: todayFees\n  },\n  \n  all_time_metrics: {\n    total_trades: (trades.trades || []).length,\n    total_btc_bought: totalBought,\n    total_btc_sold: totalSold,\n    net_btc_position: netBtc,\n    total_invested_usd: totalInvested,\n    total_fees_paid: totalFees,\n    avg_cost_basis: avgCostBasis,\n    current_btc_price: currentPrice,\n    unrealized_pnl_usd: unrealizedPnl,\n    unrealized_pnl_pct: unrealizedPnlPct\n  },\n  \n  health: {\n    system_status: status.status || 'unknown',\n    uptime: status.uptime || 'unknown',\n    kraken_auth: status.health?.kraken_auth || 'unknown',\n    consecutive_errors: status.health?.errors || 0\n  },\n  \n  // Learnings placeholder - future: integrate with Qdrant\n  learnings: {\n    market_regime: currentPrice > avgCostBasis ? 'favorable' : 'underwater',\n    position_health: unrealizedPnlPct > 0 ? 'profitable' : 'losing',\n    recommendation: unrealizedPnlPct < -10 ? 'Consider pausing buys' : \n                    unrealizedPnlPct > 10 ? 'Consider taking profits' : 'Continue strategy'\n  }\n};\n\nreturn [{ json: journal }];"
+      },
+      "name": "Compile Journal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 400]
+    },
+    {
+      "id": "log-journal",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const j = $input.first().json;\n\nconsole.log('========================================');\nconsole.log('   RHIZ DAILY PERFORMANCE JOURNAL');\nconsole.log('   ' + j.date);\nconsole.log('========================================');\nconsole.log('');\nconsole.log('PORTFOLIO SNAPSHOT');\nconsole.log('  Total Value: $' + j.summary.total_value_usd.toFixed(2));\nconsole.log('  BTC Holdings: ' + j.summary.btc_holdings.toFixed(8) + ' BTC');\nconsole.log('  BTC Price: $' + j.summary.btc_price.toFixed(2));\nconsole.log('');\nconsole.log('TODAY\\'S ACTIVITY');\nconsole.log('  Trades: ' + j.todays_activity.trades_count);\nconsole.log('  Volume: $' + j.todays_activity.volume_usd.toFixed(2));\nconsole.log('  Fees: $' + j.todays_activity.fees_paid.toFixed(4));\nconsole.log('');\nconsole.log('ALL-TIME METRICS');\nconsole.log('  Total Invested: $' + j.all_time_metrics.total_invested_usd.toFixed(2));\nconsole.log('  Avg Cost Basis: $' + j.all_time_metrics.avg_cost_basis.toFixed(2));\nconsole.log('  Unrealized P&L: $' + j.all_time_metrics.unrealized_pnl_usd.toFixed(2) + ' (' + j.all_time_metrics.unrealized_pnl_pct.toFixed(1) + '%)');\nconsole.log('  Total Fees: $' + j.all_time_metrics.total_fees_paid.toFixed(4));\nconsole.log('');\nconsole.log('ASSESSMENT');\nconsole.log('  Market Regime: ' + j.learnings.market_regime);\nconsole.log('  Position Health: ' + j.learnings.position_health);\nconsole.log('  Recommendation: ' + j.learnings.recommendation);\nconsole.log('========================================');\n\nreturn [{ json: { logged: true, journal: j } }];"
+      },
+      "name": "Log Journal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [970, 400]
+    }
+  ],
+  "connections": {
+    "Daily 11PM CT": {
+      "main": [[
+        {"node": "Get Portfolio", "type": "main", "index": 0},
+        {"node": "Get All Trades", "type": "main", "index": 0},
+        {"node": "Get Status", "type": "main", "index": 0},
+        {"node": "Get BTC Price", "type": "main", "index": 0}
+      ]]
+    },
+    "Get Portfolio": {"main": [[{"node": "Compile Journal", "type": "main", "index": 0}]]},
+    "Get All Trades": {"main": [[{"node": "Compile Journal", "type": "main", "index": 0}]]},
+    "Get Status": {"main": [[{"node": "Compile Journal", "type": "main", "index": 0}]]},
+    "Get BTC Price": {"main": [[{"node": "Compile Journal", "type": "main", "index": 0}]]},
+    "Compile Journal": {"main": [[{"node": "Log Journal", "type": "main", "index": 0}]]}
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "timezone": "America/Chicago"
+  }
+}

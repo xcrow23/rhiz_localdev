@@ -1,0 +1,199 @@
+skills:
+  - name: "trading/kraken_analysis"
+    description: "Analyze Kraken trading data, portfolio performance, market trends"
+    category: "trading"
+    utterances:
+      - "analyze trading performance"
+      - "check Kraken portfolio"
+      - "review market trends"
+      - "what's my trading history"
+      - "show me recent trades"
+      - "analyze portfolio allocation"
+      - "check circuit breaker status"
+      - "review trading strategy effectiveness"
+      # Asset-specific analysis
+      - "review market trends for Bitcoin"
+      - "analyze BTC performance"
+      - "check ETH trading patterns"
+      - "show portfolio performance"
+      - "check account balance"
+      - "what's my trading history on Kraken"
+    tools:
+      - "mcp__fathom__get_account_balance"
+      - "mcp__fathom__get_trade_history"
+      - "mcp__fathom__get_ticker_information"
+      - "mcp__fathom__get_ohlc_data"
+    dependencies: []
+    domain: "trading"
+    priority: "high"
+    hibernation_status: "observation"  # Read-only market analysis available
+    wake_requirements: []  # Already operational
+
+  - name: "memory/checkpoint_retrieval"
+    description: "Search and retrieve session checkpoints, memory context, work history"
+    category: "memory"
+    utterances:
+      - "find sessions about trading"
+      - "what did we work on last week"
+      - "retrieve memory of infrastructure deployment"
+      - "search for checkpoint about"
+      - "load previous session context"
+      - "what do we know about"
+      - "show me relevant memories"
+      - "find similar sessions"
+      # Temporal queries
+      - "what did we work on yesterday"
+      - "sessions from last week"
+      - "show recent work"
+      - "work history"
+      # Date-specific retrieval
+      - "show me sessions from December"
+      - "find sessions from last month"
+      - "retrieve memories from"
+      - "search trading-related checkpoints"
+      - "find infrastructure sessions"
+      - "retrieve memories about Docker"
+    tools:
+      - "mcp__rhiz-mcp__checkpoint_search"
+      - "mcp__rhiz-mcp__hybrid_search_checkpoints"
+      - "mcp__rhiz-mcp__load_checkpoint"
+      - "mcp__rhiz-mcp__memory_context"
+    dependencies: []
+    domain: "memory"
+    priority: "high"
+    hibernation_status: "available"  # Works during maintenance
+    wake_requirements: ["qdrant_local", "rhiz-mcp"]
+
+  - name: "infrastructure/deployment"
+    description: "Deploy services to VPS, manage Docker containers, Cloudflare Workers"
+    category: "infrastructure"
+    utterances:
+      - "deploy to VPS"
+      - "update Cloudflare Worker"
+      - "check Docker container status"
+      - "restart Qdrant service"
+      - "deploy checkpoint API"
+      - "manage VPS services"
+      - "check infrastructure health"
+      - "update deployment"
+      # Service management operations
+      - "restart the Qdrant service"
+      - "restart Docker container"
+      - "manage services"
+      # Monitoring operations
+      - "monitor system health on VPS"
+      - "check system health"
+      - "health check"
+      - "monitor infrastructure"
+      - "deploy mooncheck worker to Cloudflare"
+      - "update VPS Qdrant instance"
+      - "deploy checkpoint-api to Cloudflare Workers"
+    tools:
+      - "Bash"
+    dependencies: ["ssh_access", "docker"]
+    domain: "infrastructure"
+    priority: "medium"
+    hibernation_status: "paused"  # No deployments expected
+    wake_requirements: ["vps_access", "docker"]
+
+  - name: "memory/session_management"
+    description: "Manage dyad state, session lifecycle, working memory, handoffs"
+    category: "memory"
+    utterances:
+      - "start new session"
+      - "close current session"
+      - "update dyad state"
+      - "check shared focus"
+      - "write checkpoint"
+      - "signal completion"
+      - "propose focus shift"
+      - "update captain state"
+      # Session context management
+      - "load the current session context"
+      - "get current session state"
+      - "check session context"
+      # Working memory queries
+      - "what's in working memory right now"
+      - "show working memory"
+      - "check working memory contents"
+      - "current working memory"
+      # State updates
+      - "update dyad state with progress"
+      - "update progress"
+      - "set dyad state"
+    tools:
+      - "mcp__rhiz-mcp__get_dyad_state"
+      - "mcp__rhiz-mcp__set_captain_state"
+      - "mcp__rhiz-mcp__update_shared_focus"
+      - "mcp__rhiz-mcp__write_checkpoint"
+      - "mcp__rhiz-mcp__signal_completion"
+      - "mcp__rhiz-mcp__propose_focus_shift"
+    dependencies: []
+    domain: "memory"
+    priority: "critical"
+    hibernation_status: "available"  # Dyad state, checkpoints accessible
+    wake_requirements: ["rhiz-mcp"]
+
+  - name: "research/documentation"
+    description: "Write technical documentation, research notes, session summaries"
+    category: "research"
+    utterances:
+      - "document this decision"
+      - "write research notes"
+      - "create session summary"
+      - "update architecture docs"
+      - "write technical explanation"
+      - "document pattern usage"
+      - "create decision trace"
+      # Analysis and pattern documentation
+      - "analyze patterns in our collaboration"
+      - "document collaboration patterns"
+      - "pattern analysis"
+      - "analyze skill compression patterns"
+      - "write documentation for memory system"
+      - "create research notes on skill compression"
+      - "document architectural decisions we made"
+    tools:
+      - "Write"
+      - "Edit"
+      - "Read"
+    dependencies: []
+    domain: "research"
+    priority: "medium"
+    hibernation_status: "available"  # Read/Edit/Write always available
+    wake_requirements: []
+
+  - name: "trading/strategy_execution"
+    description: "Execute trading strategies, place orders, manage positions"
+    category: "trading"
+    utterances:
+      - "place market order"
+      - "execute trading strategy"
+      - "manage open positions"
+      - "cancel pending orders"
+      - "adjust position size"
+      - "execute trade plan"
+      # Order types and specifics
+      - "execute a limit buy order for ETH"
+      - "place a sell order at market price"
+      - "limit buy order"
+      - "market sell order"
+      - "buy ETH at limit"
+      - "sell BTC at market"
+      # Strategy implementations
+      - "implement dollar-cost averaging strategy"
+      - "execute DCA strategy"
+      - "dollar-cost averaging"
+      - "DCA into Bitcoin"
+      - "automated trading strategy"
+      - "position management"
+    tools:
+      - "mcp__fathom__add_order"
+      - "mcp__fathom__cancel_order"
+      - "mcp__fathom__get_open_orders"
+      - "mcp__fathom__get_open_positions"
+    dependencies: ["trading_approval"]
+    domain: "trading"
+    priority: "critical"
+    hibernation_status: "dormant"  # Phase 2 tools not deployed
+    wake_requirements: ["fathom_phase_2", "fc_http_gateway", "paper_mode_verified"]

@@ -1,0 +1,59 @@
+# Fathom Notifications Configuration
+
+# Slack integration
+slack:
+  enabled: false  # Set to true when webhook configured
+  webhook_url: ""  # Set via FATHOM_SLACK_WEBHOOK_URL env var
+
+  # Notification triggers
+  triggers:
+    trade_executed: true
+    order_placed: true
+    order_cancelled: false
+    error_occurred: true
+    balance_threshold: false  # Notify when balance changes by X%
+
+  # Message formatting
+  format:
+    icon_emoji: ":octopus:"
+    username: "Fathom Trading"
+
+# n8n integration
+n8n:
+  enabled: false  # Set to true when configured
+  webhook_base_url: ""  # Set via FATHOM_N8N_WEBHOOK_BASE env var
+
+  # Workflow IDs
+  workflows:
+    trade_event: "fathom-trade"
+    alert: "fathom-alert"
+    snapshot: "fathom-snapshot"
+    daily_summary: "fathom-daily-summary"
+
+# SMS alerts (via n8n → Twilio)
+sms:
+  enabled: false
+  phone: ""  # Set via FATHOM_ALERT_PHONE env var
+
+  # Only send SMS for critical events
+  critical_only: true
+
+  # Critical event types
+  critical_events:
+    - "large_loss"  # Loss > 10%
+    - "api_error"   # API authentication failure
+    - "safety_limit_exceeded"
+
+# Alert levels
+alert_levels:
+  info:
+    channels: ["slack"]
+    examples: ["trade executed", "order placed"]
+
+  warning:
+    channels: ["slack"]
+    examples: ["rate limit approaching", "unusual market movement"]
+
+  critical:
+    channels: ["slack", "sms"]
+    examples: ["large loss", "API error", "safety violation"]

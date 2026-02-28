@@ -1,0 +1,110 @@
+# Rhiz Session Checkpoint Template (with Frontmatter)
+# Copy this template when creating new checkpoints
+# Frontmatter section is OPTIONAL but recommended for searchability
+
+checkpoint:
+  # === FRONTMATTER (Optional - improves searchability) ===
+  frontmatter:
+    domains:
+      - "primary_domain"              # trading | infrastructure | memory | skills | patterns | research
+    keywords:
+      - "keyword1"                    # technical terms, concepts, tools
+      - "keyword2"
+    session_type:
+      primary: "build"                # build | debug | research | planning | refactor | integration
+      secondary: []                   # optional: ["debug", "research"]
+    technical_stack:
+      languages: ["python"]
+      frameworks: []
+      services: []
+      tools: []
+    patterns_used:
+      - pattern_name: "session_handshake"
+        usage_note: "Optional context"
+    blockers_resolved:
+      - type: "configuration"         # dependency | configuration | architecture | understanding | tooling
+        description: "Brief description"
+    decision_types:
+      - "technical"                   # architectural | technical | relational | experimental | operational
+    discoveries:
+      - "Significant finding or insight"
+    completeness:
+      status: "complete"              # complete | partial | exploratory | blocked
+      notes: "Optional context"
+    notable:
+      is_notable: false               # Set true for exemplary sessions
+      reason: ""
+
+  # === CORE METADATA ===
+  created: "2026-01-24 16:45"
+  session_id: "session_20260124_example"
+  session_topic: "Brief one-line summary"
+
+  # === SESSION NARRATIVE ===
+  session_arc: |
+    Multi-line narrative summary of session evolution.
+    Started with X, discovered Y, pivoted to Z.
+    This captures the "story" not just the state.
+
+  # === PROGRESS ===
+  progress:
+    status: "completed"               # not_started | in_progress | blocked | completed
+    completed:
+      - "accomplishment 1"
+      - "accomplishment 2"
+    current: "what was actively being worked on when session ended"
+    narrative: |
+      Paragraph-form summary of progress.
+
+  # === DECISIONS ===
+  decisions:
+    - decision: "what was decided"
+      rationale: "why this approach"
+      confidence: "high"              # high | medium | low
+      alternatives_rejected:
+        - option: "alternative considered"
+          reason: "why we didn't choose it"
+
+  # === ARTIFACTS ===
+  artifacts:
+    - type: "code"                    # code | config | doc | skill | checkpoint
+      path: "/relative/path/from/Rhiz_LocalDev"
+      description: "what it is/does"
+
+  # === WORKING MEMORY ===
+  working_memory:
+    mental_model: |
+      How we understand the system/problem works.
+    hypotheses:
+      - "hypothesis 1"
+    open_questions:
+      - "question discovered during session"
+    gotchas:
+      - "thing that looked right but wasn't"
+
+  # === NEXT STEPS ===
+  next:
+    immediate:
+      - "step 1"
+    blocked_by:
+      - "blocker if any"
+    suggested_resume_prompt: |
+      Rich narrative prompt (3-5 sentences) providing enough
+      context to continue naturally.
+
+  # === DOMAIN EXTENSIONS (Optional) ===
+  domains:
+    trading:
+      portfolio_state: {}
+      active_strategies: []
+    research:
+      active_threads: []
+
+  # === RELATIONAL STATE (Optional) ===
+  relational_state:
+    phase_assessment: "Mature Symbiosis"
+    communication_quality: "direct and aligned"
+    trust_indicators:
+      - "indicator observed"
+    friction_points:
+      - "friction if any"

@@ -1,0 +1,139 @@
+# Strategic Intelligence Layer - Cloud Deployment Configuration
+# Optimized for Hostinger VPS (4GB RAM, 6 vCPU)
+#
+# Usage:
+#   docker-compose -f docker-compose.cloud.yaml up -d
+#
+# Note: Qdrant runs in on-disk mode to minimize RAM usage (<200MB vs 2GB+)
+
+version: '3.8'
+
+services:
+  # ========================================
+  # Strategic Intelligence Layer API
+  # ========================================
+  sil-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rhiz/sil:latest
+    container_name: rhiz-sil-api
+    restart: unless-stopped
+
+    ports:
+      - "8001:8000"  # SIL API endpoint (external:internal, Hummingbot uses 8000)
+
+    volumes:
+      # Configuration (read-only)
+      - ./config:/app/config:ro
+
+      # Qdrant on-disk storage (persistent)
+      - sil-qdrant-data:/app/data/qdrant
+
+      # Logs (for debugging)
+      - ./logs:/app/logs
+
+    environment:
+      # SIL configuration
+      - SIL_CONFIG_DIR=/app/config
+      - SIL_DATA_DIR=/app/data
+      - SIL_LOG_LEVEL=INFO
+
+      # Qdrant on-disk mode (no Qdrant server needed)
+      - QDRANT_MODE=on_disk
+      - QDRANT_PATH=/app/data/qdrant
+
+      # Memory optimization
+      - PYTHONOPTIMIZE=1
+      - MALLOC_TRIM_THRESHOLD_=65536
+
+    # Resource limits (4GB VPS shared with n8n, Fathom Commander)
+    deploy:
+      resources:
+        limits:
+          memory: 1G  # Max 1GB RAM for SIL
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '1.0'
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - rhiz-network
+
+    labels:
+      - "com.rhiz.component=strategic-intelligence"
+      - "com.rhiz.phase=1"
+      - "com.rhiz.api.version=1.0.0"
+
+  # ========================================
+  # Optional: Qdrant Server (DISABLED by default)
+  # ========================================
+  # Uncomment if upgrading to Qdrant server mode (requires 2GB+ RAM)
+  #
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: rhiz-qdrant
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6333:6333"  # REST API
+  #     - "6334:6334"  # gRPC
+  #   volumes:
+  #     - sil-qdrant-data:/qdrant/storage
+  #   environment:
+  #     - QDRANT__SERVICE__HTTP_PORT=6333
+  #     - QDRANT__SERVICE__GRPC_PORT=6334
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 2G
+  #       reservations:
+  #         memory: 1G
+  #   networks:
+  #     - rhiz-network
+
+# ========================================
+# Networks
+# ========================================
+networks:
+  rhiz-network:
+    name: rhiz-network
+    driver: bridge
+
+# ========================================
+# Volumes
+# ========================================
+volumes:
+  sil-qdrant-data:
+    name: rhiz-sil-qdrant
+    driver: local
+
+# ========================================
+# Deployment Notes
+# ========================================
+# 1. VPS Resource Allocation (4GB total):
+#    - n8n: 1.5GB
+#    - Fathom Commander: 512MB
+#    - SIL API: 1GB
+#    - System: 1GB
+#
+# 2. Qdrant On-Disk Mode:
+#    - Storage: ~/domains/trading/strategic_intelligence/data/qdrant (135MB)
+#    - RAM usage: <200MB (vs 2GB for Qdrant server)
+#    - Performance: Sufficient for <10k vectors
+#
+# 3. Upgrade Path (when VPS upgraded to 8GB+):
+#    - Uncomment qdrant service
+#    - Change SIL env: QDRANT_MODE=server, QDRANT_URL=http://qdrant:6333
+#    - docker-compose up -d --force-recreate sil-api
+#
+# 4. Integration with n8n:
+#    - SIL API: http://sil-api:8000 (internal network)
+#    - Public endpoint: http://72.62.81.128:8000 (if needed)
+#    - Webhook: POST /strategy/select

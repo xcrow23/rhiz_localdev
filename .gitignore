@@ -1,0 +1,246 @@
+# ============================================================================
+# RHIZ PROJECT - GIT IGNORE
+# Security-first approach: Protect secrets, credentials, and sensitive data
+# ============================================================================
+
+# ==============================================================================
+# SECRETS & CREDENTIALS
+# ==============================================================================
+.env
+.env.local
+.env.*.local
+.claude/settings.json
+*.key
+*.pem
+*.p12
+*.pfx
+*_secret*
+*_password*
+credentials.json
+secrets.yaml
+
+# API Keys (catch various naming patterns)
+*api_key*
+*apikey*
+*api-key*
+
+# SSH Keys (except public keys)
+*.rsa
+*.dsa
+*.ecdsa
+*.ed25519
+Rhiz_onekey
+!Rhiz_onekey.pub
+
+# ==============================================================================
+# DOCKER & CONTAINERS
+# ==============================================================================
+# Don't commit actual data volumes
+domains/trading/hummingbot/conf/*
+domains/trading/hummingbot/logs/*
+domains/trading/hummingbot/data/*
+!domains/trading/hummingbot/conf/.gitkeep
+!domains/trading/hummingbot/logs/.gitkeep
+!domains/trading/hummingbot/data/.gitkeep
+
+# LocalAI downloaded models (too large, store externally)
+models/local/*.gguf
+models/local/*.bin
+models/local/*.safetensors
+
+# Container runtime files
+docker-compose.override.yml
+
+# ==============================================================================
+# SESSION & MEMORY FILES
+# ==============================================================================
+# Keep checkpoint templates and schemas, ignore actual session data with PII
+core/memory/checkpoints/*.yaml
+!core/memory/checkpoints/example_*.yaml
+!core/memory/checkpoints/.gitkeep
+core/memory/active_session.json
+
+# Temporary working memory
+*.tmp.yaml
+*.working.yaml
+
+# ==============================================================================
+# LOGS & DEBUGGING
+# ==============================================================================
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==============================================================================
+# AUDIO PRODUCTION (Claude_Grooves)
+# ==============================================================================
+Claude_Grooves/01_STEMS_MASTER/*.wav
+Claude_Grooves/01_STEMS_MASTER/*.mp3
+Claude_Grooves/01_STEMS_MASTER/*.flac
+Claude_Grooves/02_AUDIO_RAW/*.wav
+Claude_Grooves/03_PROJECT_FILES/*.als
+Claude_Grooves/03_PROJECT_FILES/Backup/
+Claude_Grooves/05_REFERENCES/*.wav
+Claude_Grooves/05_REFERENCES/*.mp3
+
+# Ableton cache
+**/.AbletonPreferences/
+**/Ableton Project Info/
+**/*.alp
+
+# Plugin cache
+**/*.vst3cache
+
+# ==============================================================================
+# BACKUPS
+# ==============================================================================
+backups/
+*.backup
+*.bak
+*~
+
+# ==============================================================================
+# OPERATING SYSTEM
+# ==============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+
+# ==============================================================================
+# IDEs & EDITORS
+# ==============================================================================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*.swn
+
+# ==============================================================================
+# PYTHON
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# ==============================================================================
+# NODE.JS (for n8n local workflows, if any)
+# ==============================================================================
+node_modules/
+package-lock.json
+yarn.lock
+
+# ==============================================================================
+# DATABASE FILES
+# ==============================================================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ==============================================================================
+# RESEARCH & DOCUMENTATION
+# ==============================================================================
+# Keep .md and .docx committed, but ignore working drafts
+*_DRAFT.md
+*_WIP.md
+~$*.docx
+
+# ==============================================================================
+# TRADING DATA (SENSITIVE)
+# ==============================================================================
+# Never commit actual trading logs or API responses
+domains/trading/market_data/*.csv
+domains/trading/market_data/*.json
+domains/trading/order_history/*
+!domains/trading/order_history/README.md
+
+# ==============================================================================
+# CHRYSALIS — BACKUP ARTIFACTS (do not commit)
+# ==============================================================================
+backups/CREDENTIAL_VAULT_*.md
+backups/cloud_exports/
+backups/*.tar.gz
+backups/*.sqlite
+backups/*.rdb
+backups/*.sql
+
+# Production env files with real secrets
+.env.production
+.env.production.*
+infrastructure/vps/.env.production
+
+# ==============================================================================
+# TEMPORARY FILES
+# ==============================================================================
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Malformed artifacts (from failed operations)
+=*
+=*.*
+nul
+UsersdreadAppDataLocalTemp*.json
+**/UsersdreadAppDataLocalTemp*
+
+# ==============================================================================
+# COMPILED / GENERATED
+# ==============================================================================
+dist/
+build/
+*.o
+*.a
+
+# ==============================================================================
+# TESTING
+# ==============================================================================
+coverage/
+.nyc_output/
+*.cover
+
+# ==============================================================================
+# NOTES
+# ==============================================================================
+# Philosophy: Default to privacy and security
+# - If unsure whether to commit, DON'T
+# - Use .gitkeep files to preserve directory structure
+# - Sensitive research findings can be redacted before commit
+# - Session checkpoints should have PII removed before committing
+#
+# To force-add an ignored file (use cautiously):
+#   git add -f path/to/file
+#
+# To check what's being ignored:
+#   git status --ignored
+# ==============================================================================

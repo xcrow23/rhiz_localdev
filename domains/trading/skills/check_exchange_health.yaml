@@ -1,0 +1,114 @@
+# Rhiz Skill: Check Exchange Health
+# Domain: Trading
+# Purpose: Verify exchange connectivity and readiness before trading operations
+
+schema_version: "1.0.0"
+
+skill:
+  name: "check_exchange_health"
+  version: "0.1.0"
+  domain: "trading"
+
+  taxonomy:
+    category: "verification"
+    subcategory: "connectivity"
+    tags:
+      - "exchange"
+      - "health-check"
+      - "prerequisites"
+      - "kraken"
+
+  description: |
+    Verifies that the exchange connection is healthy before executing trades.
+    Checks API connectivity, authentication, permissions, and rate limits.
+    This is a critical prerequisite for any trading operation.
+
+  causal_model: |
+    Exchange connectivity is probabilistic - network issues, API downtime,
+    or authentication failures can occur. Checking health before operations
+    prevents failed trades and provides early error detection.
+    Assumes: Hummingbot/Fathom MCP is running and configured.
+
+recognition:
+  trigger_patterns:
+    - pattern: "check exchange connection"
+      confidence: 0.95
+    - pattern: "is kraken connected"
+      confidence: 0.9
+    - pattern: "verify exchange health"
+      confidence: 0.95
+    - pattern: "test exchange connectivity"
+      confidence: 0.9
+    - pattern: "can we trade right now"
+      confidence: 0.8
+
+  context_requirements:
+    - "Fathom or Hummingbot MCP server must be running"
+    - "Exchange credentials must be configured"
+
+  anti_patterns:
+    - "during active trading (would add latency)"
+    - "for non-exchange operations"
+
+interface:
+  inputs:
+    - name: "exchange_name"
+      type: "string"
+      required: false
+      description: "Name of exchange to check (default: kraken)"
+      validation: "must be configured exchange"
+
+  outputs:
+    - name: "health_status"
+      type: "object"
+      description: |
+        {
+          exchange: string,
+          connected: boolean,
+          latency_ms: number,
+          balance_accessible: boolean,
+          trading_enabled: boolean,
+          rate_limit_ok: boolean,
+          timestamp: string
+        }
+
+  side_effects:
+    - "Makes API call to exchange (counts toward rate limit)"
+
+composition:
+  primitives:
+    - name: "exchange_connection_check"
+      location: "core/skills/primitives/exchange_connection_check.yaml"
+      purpose: "Verify basic connectivity"
+
+  dependencies:
+    - "Fathom MCP server running"
+    - "Exchange credentials configured"
+
+execution:
+  # This would be implemented as MCP tool call or Python function
+  steps:
+    - "Call exchange_connection_check primitive"
+    - "Parse and validate response"
+    - "Return structured health status"
+
+  failure_modes:
+    - mode: "Exchange API down"
+      recovery: "Return error with timestamp, retry after delay"
+
+    - mode: "Invalid credentials"
+      recovery: "Alert user, halt trading operations"
+
+    - mode: "Rate limit exceeded"
+      recovery: "Wait for rate limit reset, cache result"
+
+  performance:
+    typical_latency_ms: 200
+    max_latency_ms: 2000
+    cache_duration_sec: 30  # Cache results for 30 seconds
+
+metadata:
+  created: "2025-12-28"
+  author: "Captain & First Mate"
+  tested: false
+  production_ready: false

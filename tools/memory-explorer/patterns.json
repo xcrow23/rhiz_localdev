@@ -1,0 +1,546 @@
+{
+  "metadata": {
+    "total_checkpoints": 31,
+    "checkpoints_directory": "C:\\Users\\dread\\documents\\rhiz_localdev\\core\\memory\\checkpoints",
+    "extraction_timestamp": "session_20260111_session_42_phase1_complete.yaml"
+  },
+  "decision_confidence": {
+    "timeline": [
+      {
+        "session": "session_20251217_desktop_philosophy",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251217_foundation",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251220_first_mate_initialization.yaml",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251221_gifts_and_pivot",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251222_kraken_credentials",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251222_memory_test_expanded_capabilities",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251223_birthday_research.yaml",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251223_memory_system_implementation",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251224_autonomous_exploration.yaml",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251224_haist_integration",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251225_cd_synthesis_fathom_v2",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251226_27_complete_infrastructure",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251226_bridge_continuation",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251226_heroic_bridge",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251226_wave1_completion",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20251226_wave2_first_trade",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_1767316993",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20260102_foundation",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_1767418331359",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20260103_infrastructure_operational",
+        "date": "2026-01-03",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_1767459932093",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 3,
+          "low": 0
+        },
+        "total_decisions": 3
+      },
+      {
+        "session": "session_20260103_workflow_optimization",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_24_moonfire_manifest_launch",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20260105_memory_foundations",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 3,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 3
+      },
+      {
+        "session": "session_20260105_pre_restart_qdrant_client_fix",
+        "date": "2026-01-05",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 1,
+          "low": 0
+        },
+        "total_decisions": 1
+      },
+      {
+        "session": "session_20260106_memory_automation_complete",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 3,
+          "low": 0
+        },
+        "total_decisions": 3
+      },
+      {
+        "session": "session_20260108_mooncheck_vps_migration_checkpoint",
+        "date": "2026-01-08",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 3,
+          "low": 0
+        },
+        "total_decisions": 3
+      },
+      {
+        "session": "session_20260110_comprehensive_audit",
+        "date": "unknown",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "total_decisions": 0
+      },
+      {
+        "session": "session_20260110_mooncheck_migration_implementation",
+        "date": "2026-01-10",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 4,
+          "low": 0
+        },
+        "total_decisions": 4
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "confidence_counts": {
+          "high": 4,
+          "medium": 1,
+          "low": 0
+        },
+        "total_decisions": 5
+      },
+      {
+        "session": "session_20260111_session_42_phase1_complete",
+        "date": "2026-01-12",
+        "confidence_counts": {
+          "high": 0,
+          "medium": 7,
+          "low": 0
+        },
+        "total_decisions": 7
+      }
+    ]
+  },
+  "phase_transitions": [
+    {
+      "session": "session_20260111_session_42_infrastructure_federation",
+      "date": "2026-01-11",
+      "from_phase": "(initial)",
+      "to_phase": "Phase 1-2 Complete, Phase 3 Roadmap Updated",
+      "context": "Captain celebrated blog post #2 going LIVE, asked two critical questions: (1) What's the n8n\u2192Cloudflare migration status? (2) How could Fathom/FC/SIL flows be unified? I entered plan mode with 3 explo..."
+    }
+  ],
+  "gotchas": {
+    "gotchas": [
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "MCP stdio servers need stdin_open: true, not HTTP healthchecks"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Docker image caching is aggressive - must remove images, not just rebuild"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Environment variables load correctly from .env.production with Docker Compose"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Gateway 'degraded' status is expected when stdio servers can't respond to HTTP probes"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Qdrant 1.7.4 uses string schema types ('keyword'), not enums (PayloadSchemaType.KEYWORD)"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "External networks simplify deployment - reuse existing networks instead of creating overlapping subnets"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Cloudflare Workers deploy in <2 seconds each, sub-millisecond D1 queries"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Infrastructure-first deployment is valid: deploy early, log placeholders, integrate in next phase"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "Code review agents can identify real issues (webhook auth gap) but may misunderstand intentional architecture (MCP/HTTP bridge)"
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "gotcha": "In-session credential sharing accelerates deployment (Captain's insight: 'get past the hesitancy')"
+      }
+    ],
+    "total": 10
+  },
+  "domain_activity": {
+    "timeline": [
+      {
+        "session": "session_20251217_desktop_philosophy",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251217_foundation",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251220_first_mate_initialization.yaml",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251221_gifts_and_pivot",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251222_kraken_credentials",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251222_memory_test_expanded_capabilities",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251223_birthday_research.yaml",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251223_memory_system_implementation",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251224_autonomous_exploration.yaml",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251224_haist_integration",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251225_cd_synthesis_fathom_v2",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251226_27_complete_infrastructure",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251226_bridge_continuation",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251226_heroic_bridge",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251226_wave1_completion",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20251226_wave2_first_trade",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_1767316993",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260102_foundation",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_1767418331359",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260103_infrastructure_operational",
+        "date": "2026-01-03",
+        "domains": []
+      },
+      {
+        "session": "session_1767459932093",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260103_workflow_optimization",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_24_moonfire_manifest_launch",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260105_memory_foundations",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260105_pre_restart_qdrant_client_fix",
+        "date": "2026-01-05",
+        "domains": []
+      },
+      {
+        "session": "session_20260106_memory_automation_complete",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260108_mooncheck_vps_migration_checkpoint",
+        "date": "2026-01-08",
+        "domains": []
+      },
+      {
+        "session": "session_20260110_comprehensive_audit",
+        "date": "unknown",
+        "domains": []
+      },
+      {
+        "session": "session_20260110_mooncheck_migration_implementation",
+        "date": "2026-01-10",
+        "domains": []
+      },
+      {
+        "session": "session_20260111_session_42_infrastructure_federation",
+        "date": "2026-01-11",
+        "domains": [
+          "trading"
+        ]
+      },
+      {
+        "session": "session_20260111_session_42_phase1_complete",
+        "date": "2026-01-12",
+        "domains": []
+      }
+    ]
+  }
+}

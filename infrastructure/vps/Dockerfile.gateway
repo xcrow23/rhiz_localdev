@@ -1,0 +1,47 @@
+# Unified Trading Platform API Gateway
+# Routes requests to Fathom, FC, and SIL services
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements-gateway.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements-gateway.txt
+
+# Copy gateway application
+COPY gateway_trading.py ./
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+# Create non-root user for security
+RUN useradd -m -u 1000 gateway && \
+    chown -R gateway:gateway /app
+USER gateway
+
+# Environment variables (will be overridden by docker-compose)
+ENV PYTHONUNBUFFERED=1
+ENV FATHOM_URL=http://fathom-mcp:8765
+ENV FC_URL=http://fathom-commander:8766
+ENV SIL_URL=http://sil-fastapi:8000
+ENV QDRANT_URL=http://qdrant:6333
+ENV GATEWAY_LOG_LEVEL=INFO
+
+# Expose gateway port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Run FastAPI gateway via uvicorn
+CMD ["uvicorn", "gateway_trading:app", "--host", "0.0.0.0", "--port", "8080", "--log-level", "info"]

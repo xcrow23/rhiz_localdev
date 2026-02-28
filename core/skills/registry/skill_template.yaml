@@ -1,0 +1,162 @@
+# Rhiz Skill Template
+# Version: 1.0.0
+# 
+# Skills are the fundamental unit of capability in Rhiz.
+# They follow the four-layer model: Recognition → Retrieval → Composition → Execution
+#
+# Design Principles:
+# 1. Skills should encode pattern recognition, not just procedures
+# 2. Identify primitives that can be reused across skills
+# 3. Document the causal model (why this works), not just the procedure (how)
+# 4. Include failure modes and recovery strategies
+
+schema_version: "1.0.0"
+
+skill:
+  # Identity
+  name: "skill_name"                     # snake_case, descriptive
+  version: "0.1.0"                       # semver
+  domain: "trading | research | infrastructure | meta"
+  
+  # Classification for routing
+  taxonomy:
+    category: "primary category"
+    subcategory: "specific area"
+    tags:                                # Semantic tags for retrieval
+      - "tag1"
+      - "tag2"
+  
+  # Human-readable description
+  description: |
+    What this skill does and when to use it.
+    Include the problem it solves and expected outcomes.
+  
+  # Causal model - WHY this works
+  causal_model: |
+    The underlying mechanism that makes this skill effective.
+    What assumptions does it rely on?
+    What would cause it to fail?
+
+# Recognition layer - how to identify when this skill applies
+recognition:
+  # Trigger patterns that activate this skill
+  trigger_patterns:
+    - pattern: "natural language pattern or regex"
+      confidence: 0.9                    # How confident this pattern is
+    
+  # Context requirements
+  context_requirements:
+    - "requirement that must be true for skill to apply"
+  
+  # Anti-patterns - when NOT to use this skill
+  anti_patterns:
+    - "situation where this skill would be wrong choice"
+
+# Input/Output specification
+interface:
+  inputs:
+    - name: "input_name"
+      type: "string | number | boolean | object | array"
+      required: true
+      description: "what this input represents"
+      validation: "validation rule if any"
+  
+  outputs:
+    - name: "output_name"
+      type: "string | number | boolean | object | array"
+      description: "what this output represents"
+  
+  # Side effects (external state changes)
+  side_effects:
+    - "description of external state change"
+
+# Composition layer - primitives and dependencies
+composition:
+  # Primitive operations this skill uses
+  primitives:
+    - name: "primitive_name"
+      location: "core/skills/primitives/primitive_name.yaml"
+      purpose: "why this primitive is needed"
+  
+  # Other skills this depends on
+  skill_dependencies:
+    - "other_skill_name"
+  
+  # External tools/APIs required
+  tool_dependencies:
+    - name: "tool_name"
+      type: "mcp | api | cli | library"
+      required: true
+
+# Execution layer - how to run the skill
+execution:
+  # Execution mode
+  mode: "synchronous | asynchronous | streaming"
+  
+  # Human checkpoint requirements
+  human_checkpoints:
+    before_execution: false              # Require approval before running
+    on_low_confidence: true              # Flag for review if confidence < threshold
+    confidence_threshold: 0.6
+    on_side_effects: true                # Require approval for state changes
+  
+  # The actual procedure
+  procedure: |
+    Step-by-step execution logic.
+    Can reference primitives and tools.
+    Should be implementable in code.
+  
+  # Or, for code-based skills:
+  implementation:
+    language: "python | javascript | bash"
+    code: |
+      # Actual implementation code
+      pass
+
+# Failure handling
+failure_modes:
+  - condition: "what triggers this failure"
+    detection: "how to detect it"
+    recovery: "what to do about it"
+    severity: "low | medium | high | critical"
+
+# Observability
+telemetry:
+  metrics:
+    - name: "metric_name"
+      type: "counter | gauge | histogram"
+      description: "what this measures"
+  
+  logs:
+    - event: "event_name"
+      level: "debug | info | warn | error"
+      data: ["fields to include"]
+
+# Documentation and training
+documentation:
+  # Examples of successful use
+  examples:
+    - input: "example input"
+      output: "example output"
+      context: "when this example applies"
+  
+  # Related skills for cross-reference
+  related_skills:
+    - "related_skill_name"
+  
+  # Learning resources
+  references:
+    - "link or citation"
+
+# Metadata
+metadata:
+  created: "YYYY-MM-DD"
+  created_by: "human | ai | collaborative"
+  last_modified: "YYYY-MM-DD"
+  status: "draft | active | deprecated"
+  
+  # For training data extraction
+  training_value:
+    reasoning_quality: "low | medium | high"
+    transferability: "low | medium | high"
+    novelty: "low | medium | high"

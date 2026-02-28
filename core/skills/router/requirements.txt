@@ -1,0 +1,16 @@
+# Rhiz Skill Router Dependencies
+# Recognition & Retrieval Engine (Layers 1-2)
+
+# Core Dependencies
+sentence-transformers>=2.2.0  # Semantic embeddings for pattern matching
+PyYAML>=6.0                   # Skill definition parsing
+numpy>=1.24.0                 # Vector operations
+
+# Optional: Performance Optimizations
+# torch>=2.0.0                # GPU acceleration (if available)
+# faiss-cpu>=1.7.4            # Faster vector search for large skill libraries
+
+# Development Dependencies (uncomment for dev work)
+# pytest>=7.4.0               # Testing framework
+# black>=23.0.0               # Code formatting
+# mypy>=1.5.0                 # Type checking

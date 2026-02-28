@@ -1,0 +1,94 @@
+{
+  "name": "Rhiz Weekly Strategy Review",
+  "active": true,
+  "isArchived": false,
+  "versionId": "a7b8c9d0-7777-8888-9999-000011112222",
+  "nodes": [
+    {
+      "id": "trigger-sat-8pm",
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "cronExpression", "expression": "0 20 * * 6"}]
+        }
+      },
+      "name": "Saturday 8PM CT",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "id": "get-portfolio-wk",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/portfolio/summary",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get Portfolio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 200]
+    },
+    {
+      "id": "get-trades-wk",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/orders/history?count=100",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get All Trades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 400]
+    },
+    {
+      "id": "get-ticker-wk",
+      "parameters": {
+        "url": "http://rhiz_fathom_commander:8765/market/ticker?pair=XXBTZUSD",
+        "options": {"timeout": 15000}
+      },
+      "name": "Get BTC Price",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 600]
+    },
+    {
+      "id": "weekly-analysis",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Weekly Strategy Review\nconst portfolio = $('Get Portfolio').first().json;\nconst trades = $('Get All Trades').first().json;\nconst ticker = $('Get BTC Price').first().json;\n\nconst now = new Date();\nconst weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;\nconst currentPrice = ticker.tickers?.XXBTZUSD?.price || 0;\n\n// Filter this week's trades\nconst allTrades = trades.trades || [];\nconst weekTrades = allTrades.filter(t => t.time >= weekAgo);\n\n// Calculate weekly metrics\nlet weekBuys = 0, weekSells = 0;\nlet weekBuyCost = 0, weekSellRevenue = 0;\nlet weekFees = 0;\nlet weekBtcBought = 0, weekBtcSold = 0;\n\nfor (const trade of weekTrades) {\n  const volume = parseFloat(trade.volume);\n  const cost = parseFloat(trade.cost);\n  weekFees += parseFloat(trade.fee);\n  \n  if (trade.side === 'buy') {\n    weekBuys++;\n    weekBuyCost += cost;\n    weekBtcBought += volume;\n  } else {\n    weekSells++;\n    weekSellRevenue += cost;\n    weekBtcSold += volume;\n  }\n}\n\n// All-time metrics for comparison\nlet totalBtcBought = 0, totalBuyCost = 0;\nfor (const trade of allTrades) {\n  if (trade.side === 'buy') {\n    totalBtcBought += parseFloat(trade.volume);\n    totalBuyCost += parseFloat(trade.cost);\n  }\n}\nconst avgCostBasis = totalBtcBought > 0 ? totalBuyCost / totalBtcBought : currentPrice;\n\n// Portfolio state\nconst equity = portfolio.portfolio?.equity || 0;\nconst totalValue = portfolio.portfolio?.total_value_usd || 0;\n\n// Benchmark comparisons (simple)\n// 1. HODL benchmark: What if we just held BTC from start?\n// 2. USD benchmark: What if we just held USD?\nconst initialCapital = 50; // Starting capital\nconst btcHoldingsValue = totalBtcBought * currentPrice;\nconst actualReturn = ((equity - initialCapital) / initialCapital) * 100;\n\n// Strategy effectiveness\nlet strategyGrade = 'C';\nlet strategyNotes = [];\n\nif (actualReturn > 5) {\n  strategyGrade = 'A';\n  strategyNotes.push('Excellent: >5% return');\n} else if (actualReturn > 0) {\n  strategyGrade = 'B';\n  strategyNotes.push('Good: Positive return');\n} else if (actualReturn > -5) {\n  strategyGrade = 'C';\n  strategyNotes.push('Acceptable: Small loss, within risk tolerance');\n} else {\n  strategyGrade = 'D';\n  strategyNotes.push('Review needed: Significant losses');\n}\n\nif (weekTrades.length === 0) {\n  strategyNotes.push('No trades this week - consider if opportunities were missed');\n}\n\nif (weekBuys > 5) {\n  strategyNotes.push('High trade frequency - ensure each trade has clear rationale');\n}\n\n// Recommendations for next week\nlet recommendations = [];\nif (currentPrice < avgCostBasis * 0.95) {\n  recommendations.push('Price below cost basis - good accumulation opportunity if confident');\n}\nif (currentPrice > avgCostBasis * 1.10) {\n  recommendations.push('Price >10% above cost basis - consider partial profit taking');\n}\nif (weekFees > 0.50) {\n  recommendations.push('Fees eating into returns - consider larger, less frequent trades');\n}\nif (recommendations.length === 0) {\n  recommendations.push('Continue current strategy - no major adjustments needed');\n}\n\nconst review = {\n  week_ending: now.toISOString().split('T')[0],\n  timestamp: now.toISOString(),\n  \n  this_week: {\n    trades: weekTrades.length,\n    buys: weekBuys,\n    sells: weekSells,\n    btc_bought: weekBtcBought,\n    btc_sold: weekBtcSold,\n    net_btc: weekBtcBought - weekBtcSold,\n    cost_usd: weekBuyCost,\n    revenue_usd: weekSellRevenue,\n    fees_paid: weekFees\n  },\n  \n  portfolio_state: {\n    equity: equity,\n    total_value_usd: totalValue,\n    btc_price: currentPrice,\n    avg_cost_basis: avgCostBasis,\n    return_pct: actualReturn\n  },\n  \n  benchmarks: {\n    initial_capital: initialCapital,\n    current_equity: equity,\n    return_vs_hodl_usd: 'N/A (need historical price)',\n    strategy_return_pct: actualReturn\n  },\n  \n  assessment: {\n    grade: strategyGrade,\n    notes: strategyNotes,\n    recommendations: recommendations\n  },\n  \n  // For 50/50 split tracking\n  reinvestment_ready: equity > initialCapital * 1.10,\n  profit_available: Math.max(0, equity - initialCapital)\n};\n\nreturn [{ json: review }];"
+      },
+      "name": "Weekly Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 400]
+    },
+    {
+      "id": "log-review",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const r = $input.first().json;\n\nconsole.log('================================================');\nconsole.log('   RHIZ WEEKLY STRATEGY REVIEW');\nconsole.log('   Week Ending: ' + r.week_ending);\nconsole.log('================================================');\nconsole.log('');\nconsole.log('THIS WEEK\\'S ACTIVITY');\nconsole.log('  Total Trades: ' + r.this_week.trades);\nconsole.log('  Buys: ' + r.this_week.buys + ' | Sells: ' + r.this_week.sells);\nconsole.log('  Net BTC: ' + r.this_week.net_btc.toFixed(8));\nconsole.log('  Fees Paid: $' + r.this_week.fees_paid.toFixed(4));\nconsole.log('');\nconsole.log('PORTFOLIO STATE');\nconsole.log('  Equity: $' + r.portfolio_state.equity.toFixed(2));\nconsole.log('  BTC Price: $' + r.portfolio_state.btc_price.toFixed(2));\nconsole.log('  Avg Cost Basis: $' + r.portfolio_state.avg_cost_basis.toFixed(2));\nconsole.log('  Return: ' + r.portfolio_state.return_pct.toFixed(2) + '%');\nconsole.log('');\nconsole.log('ASSESSMENT');\nconsole.log('  Grade: ' + r.assessment.grade);\nfor (const note of r.assessment.notes) {\n  console.log('  - ' + note);\n}\nconsole.log('');\nconsole.log('RECOMMENDATIONS FOR NEXT WEEK');\nfor (const rec of r.assessment.recommendations) {\n  console.log('  -> ' + rec);\n}\nconsole.log('');\nconsole.log('50/50 SPLIT STATUS');\nconsole.log('  Reinvestment Ready: ' + (r.reinvestment_ready ? 'YES' : 'No'));\nconsole.log('  Profit Available: $' + r.profit_available.toFixed(2));\nconsole.log('================================================');\n\nreturn [{ json: { logged: true, review: r } }];"
+      },
+      "name": "Log Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [970, 400]
+    }
+  ],
+  "connections": {
+    "Saturday 8PM CT": {
+      "main": [[
+        {"node": "Get Portfolio", "type": "main", "index": 0},
+        {"node": "Get All Trades", "type": "main", "index": 0},
+        {"node": "Get BTC Price", "type": "main", "index": 0}
+      ]]
+    },
+    "Get Portfolio": {"main": [[{"node": "Weekly Analysis", "type": "main", "index": 0}]]},
+    "Get All Trades": {"main": [[{"node": "Weekly Analysis", "type": "main", "index": 0}]]},
+    "Get BTC Price": {"main": [[{"node": "Weekly Analysis", "type": "main", "index": 0}]]},
+    "Weekly Analysis": {"main": [[{"node": "Log Review", "type": "main", "index": 0}]]}
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "timezone": "America/Chicago"
+  }
+}

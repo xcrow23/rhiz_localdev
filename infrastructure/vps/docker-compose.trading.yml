@@ -1,0 +1,285 @@
+version: '3.8'
+
+# Unified Trading Platform - Hostinger VPS Deployment
+# Date: 2026-01-12
+# Session: 42 - Trading Systems Federation
+# Architecture: Fathom (execution) + FC (orchestration) + SIL (intelligence) + Qdrant (shared memory)
+# Deploy to: /opt/rhiz_trading on Hostinger VPS (72.62.81.128)
+
+services:
+  # ========================================
+  # EXECUTION LAYER: Fathom (Kraken MCP)
+  # ========================================
+  fathom-mcp:
+    build:
+      context: ./domains/trading/fathom
+      dockerfile: Dockerfile
+    container_name: fathom-mcp
+    ports:
+      - "8765:8765"
+    environment:
+      - KRAKEN_API_KEY=${KRAKEN_API_KEY}
+      - KRAKEN_SECRET_KEY=${KRAKEN_SECRET_KEY}
+      - QDRANT_URL=http://qdrant:6333
+      - FATHOM_MODE=${FATHOM_MODE:-paper}
+      - FATHOM_LOG_LEVEL=INFO
+    volumes:
+      - fathom-data:/app/data
+      - fathom-logs:/app/logs
+    networks:
+      - trading-net
+    restart: unless-stopped
+    stdin_open: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - qdrant
+
+  # ========================================
+  # ORCHESTRATION LAYER: Fathom Commander (MCP Server)
+  # ========================================
+  fathom-commander:
+    build:
+      context: ./domains/trading/fathom_commander
+      dockerfile: Dockerfile
+    container_name: fathom-commander
+    ports:
+      - "8766:8766"
+    environment:
+      - FATHOM_MCP_URL=http://fathom-mcp:8765
+      - QDRANT_URL=http://qdrant:6333
+      - FC_MODE=${FC_MODE:-paper}
+      - FC_MAX_ORDER_USD=50
+      - FC_APPROVAL_THRESHOLD_USD=20
+      - FC_LOG_LEVEL=INFO
+    volumes:
+      - fc-state:/app/state
+      - fc-logs:/app/logs
+    depends_on:
+      - fathom-mcp
+      - qdrant
+    networks:
+      - trading-net
+    restart: unless-stopped
+    stdin_open: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================
+  # ORCHESTRATION HTTP: FC HTTP Gateway
+  # ========================================
+  fc-http-gateway:
+    build:
+      context: ./domains/trading/fathom_commander
+      dockerfile: Dockerfile.gateway
+    container_name: fc-http-gateway
+    ports:
+      - "127.0.0.1:8767:8767"  # Localhost only - access via unified gateway or Cloudflare Tunnel
+    environment:
+      - KRAKEN_API_KEY=${KRAKEN_API_KEY}
+      - KRAKEN_SECRET_KEY=${KRAKEN_SECRET_KEY}
+      - QDRANT_URL=http://qdrant:6333
+      - FC_MODE=${FC_MODE:-paper}
+      - FC_MAX_ORDER_USD=50
+      - FC_APPROVAL_THRESHOLD_USD=20
+      - FC_MAX_DAILY_TRADES=10
+      - FC_DAILY_LOSS_LIMIT=25
+      - FC_HTTP_PORT=8767
+      - FC_HTTP_API_KEY=${FC_HTTP_API_KEY}  # API key for HTTP authentication (generate with: openssl rand -hex 32)
+      - FC_LOG_LEVEL=INFO
+    volumes:
+      - fc-state:/app/state  # Shared state with MCP server
+      - fc-http-logs:/app/logs
+    depends_on:
+      - fathom-mcp
+      - qdrant
+    networks:
+      - trading-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8767/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================
+  # INTELLIGENCE LAYER: Strategic Intelligence Layer
+  # ========================================
+  sil-fastapi:
+    build:
+      context: ./domains/trading/strategic_intelligence
+      dockerfile: Dockerfile
+    container_name: sil-fastapi
+    ports:
+      - "8001:8000"
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - SIL_ENABLE_MEMORY=true
+      - SIL_LEARNING_ENABLED=${SIL_LEARNING_ENABLED:-false}
+      - SIL_LOG_LEVEL=INFO
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
+    volumes:
+      - sil-data:/app/data
+      - sil-logs:/app/logs
+    depends_on:
+      - qdrant
+    networks:
+      - trading-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ========================================
+  # SHARED MEMORY: Qdrant Vector Database
+  # ========================================
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"  # gRPC port
+    volumes:
+      - qdrant-storage:/qdrant/storage
+      - qdrant-snapshots:/qdrant/snapshots
+    networks:
+      - trading-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6333/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ========================================
+  # API GATEWAY: Unified REST Interface
+  # ========================================
+  fastapi-gateway:
+    build:
+      context: ./infrastructure/vps
+      dockerfile: Dockerfile.gateway
+    container_name: fastapi-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - FATHOM_URL=http://fathom-mcp:8765
+      - FC_URL=http://fathom-commander:8766
+      - SIL_URL=http://sil-fastapi:8000
+      - QDRANT_URL=http://qdrant:6333
+      - GATEWAY_LOG_LEVEL=INFO
+      - HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
+    volumes:
+      - gateway-logs:/app/logs
+    depends_on:
+      - fathom-mcp
+      - fathom-commander
+      - sil-fastapi
+      - qdrant
+    networks:
+      - trading-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================
+  # REVERSE PROXY: Nginx (SSL Termination)
+  # ========================================
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./infrastructure/vps/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./infrastructure/vps/nginx/ssl:/etc/nginx/ssl:ro
+  #     - nginx-logs:/var/log/nginx
+  #   depends_on:
+  #     - fastapi-gateway
+  #   networks:
+  #     - trading-net
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nginx", "-t"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 10s
+
+# ========================================
+# NETWORKS
+# ========================================
+networks:
+  trading-net:
+    external: true
+    name: rhiz_network
+
+# ========================================
+# VOLUMES
+# ========================================
+volumes:
+  # Fathom volumes
+  fathom-data:
+    driver: local
+  fathom-logs:
+    driver: local
+
+  # Fathom Commander volumes
+  fc-state:
+    driver: local
+  fc-logs:
+    driver: local
+  fc-http-logs:
+    driver: local
+
+  # SIL volumes
+  sil-data:
+    driver: local
+  sil-logs:
+    driver: local
+
+  # Qdrant volumes
+  qdrant-storage:
+    driver: local
+  qdrant-snapshots:
+    driver: local
+
+  # Gateway volumes
+  gateway-logs:
+    driver: local
+
+  # Nginx volumes
+  # nginx-logs:
+  #   driver: local

@@ -1,0 +1,74 @@
+{
+  "name": "SIL Health Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "sil-schedule-trigger",
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://sil-api:8000/health",
+        "method": "GET",
+        "options": {}
+      },
+      "id": "sil-health-check",
+      "name": "SIL Health Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const healthData = $input.all()[0].json;\nconst timestamp = new Date().toISOString();\n\nconsole.log(`[${timestamp}] SIL Health Check:`, JSON.stringify(healthData, null, 2));\n\nreturn {\n  json: {\n    timestamp,\n    status: healthData.status,\n    version: healthData.version,\n    components: healthData.components,\n    healthy: healthData.status === 'healthy'\n  }\n};"
+      },
+      "id": "sil-log-result",
+      "name": "Log Health Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "SIL Health Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SIL Health Check": {
+      "main": [
+        [
+          {
+            "node": "Log Health Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false
+  }
+}

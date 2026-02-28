@@ -1,0 +1,167 @@
+{
+  "name": "Mooncheck - Blog Transcript Capture",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mooncheck",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract and validate mooncheck data\nconst body = $input.item.json.body;\n\n// Generate mooncheck ID\nconst moonchecId = `mooncheck_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n\n// Extract transcript (required)\nconst transcript = body.transcript || body.text || '';\n\nif (!transcript || transcript.trim().length === 0) {\n  throw new Error('Transcript is required');\n}\n\n// Extract optional metadata\nconst topicHint = body.topic_hint || body.topic || '';\nconst category = body.category || 'blog';\nconst timestamp = new Date().toISOString();\n\n// Format as mooncheck YAML structure\nconst moonchecData = {\n  id: moonchecId,\n  timestamp: timestamp,\n  transcript: transcript,\n  topic_hint: topicHint,\n  category: category,\n  word_count: transcript.split(/\\s+/).length,\n  created_via: 'ios_shortcut',\n  status: 'captured'\n};\n\n// Prepare for Qdrant embedding\nconst textForEmbedding = `${category} ${topicHint} ${transcript}`.trim();\n\nreturn {\n  mooncheck: moonchecData,\n  text_to_embed: textForEmbedding\n};"
+      },
+      "id": "format_mooncheck",
+      "name": "Format Mooncheck",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.QDRANT_URL }}/collections/moonchecks/points",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"points\": [\n    {\n      \"id\": \"{{ $json.mooncheck.id }}\",\n      \"vector\": {{ $json.embedding }},\n      \"payload\": {{ $json.mooncheck }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "store_in_qdrant",
+      "name": "Store in Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"mooncheck_id\": \"{{ $('Format Mooncheck').item.json.mooncheck.id }}\",\n  \"timestamp\": \"{{ $('Format Mooncheck').item.json.mooncheck.timestamp }}\",\n  \"word_count\": {{ $('Format Mooncheck').item.json.mooncheck.word_count }},\n  \"message\": \"Mooncheck captured and stored in Qdrant\"\n}",
+        "options": {}
+      },
+      "id": "webhook_response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.QDRANT_URL }}/collections/moonchecks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vectors\": {\n    \"size\": 384,\n    \"distance\": \"Cosine\"\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ensure_collection",
+      "name": "Ensure Moonchecks Collection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [250, 500],
+      "notes": "Creates collection if it doesn't exist (PUT is idempotent)"
+    },
+    {
+      "parameters": {
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "text": "={{ $json.text_to_embed }}",
+        "options": {}
+      },
+      "id": "generate_embedding",
+      "name": "Generate Embedding",
+      "type": "n8n-nodes-base.embeddingsHuggingface",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "notes": "Uses HuggingFace to generate 384-dim vector embedding"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Mooncheck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Mooncheck": {
+      "main": [
+        [
+          {
+            "node": "Generate Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Embedding": {
+      "main": [
+        [
+          {
+            "node": "Store in Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-01-04T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,14 @@
+# Fathom Commander Dependencies
+# Python 3.12+
+
+# Core MCP protocol
+mcp>=0.1.0
+
+# Configuration & Environment
+pyyaml>=6.0
+python-dotenv>=1.0
+
+# Optional: Qdrant memory integration (if used)
+# qdrant-client[fastembed]>=1.7.0
+
+# Note: httpx not required - using stdlib urllib for API calls
