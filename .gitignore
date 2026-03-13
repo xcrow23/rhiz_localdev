@@ -10,6 +10,7 @@
 .env.local
 .env.*.local
 .claude/settings.json
+.claude/settings.local.json
 *.key
 *.pem
 *.p12
@@ -198,6 +199,13 @@ backups/*.sql
 .env.production
 .env.production.*
 infrastructure/vps/.env.production
+
+# ==============================================================================
+# MEMORY EXPORTS & VALIDATION ARTIFACTS
+# ==============================================================================
+rhiz_memories.snapshot
+memory_export.json
+checkpoint_validation_results.json
 
 # ==============================================================================
 # TEMPORARY FILES

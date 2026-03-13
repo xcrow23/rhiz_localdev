@@ -244,7 +244,7 @@ async function callClaudeAPI(prompt, apiKey, maxTokens = 1000) {
       "anthropic-version": "2023-06-01"
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",  // UPDATE MODEL ID ON REHYDRATION
+      model: "claude-sonnet-4-6",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }]
     })
