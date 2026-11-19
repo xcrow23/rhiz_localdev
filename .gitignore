@@ -255,3 +255,6 @@ coverage/
 
 # Claude_Grooves moved to Rhiz/grooves (2026-11-17)
 Claude_Grooves/
+
+# Local memory exports (private)
+*rhiz_memories.snapshot
