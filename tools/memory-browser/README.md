@@ -24,7 +24,7 @@ Interactive CLI tool for exploring Qdrant vector memories in the Rhiz project.
 ## Usage
 
 ```bash
-cd /mnt/c/Users/dread/Documents/Rhiz_LocalDev/tools/memory-browser
+cd /mnt/c/Users/dread/Documents/Rhiz/origin/tools/memory-browser
 
 # Show collection info
 python3 rhiz_memory_browser.py info

@@ -6,7 +6,7 @@
       "args": [
         "server.py"
       ],
-      "cwd": "C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\domains\\trading\\fathom_commander",
+      "cwd": "C:\\Users\\dread\\Documents\\Rhiz\\origin\\domains\\trading\\fathom_commander",
       "env": {
         "KRAKEN_API_KEY": "${KRAKEN_API_KEY}",
         "KRAKEN_SECRET_KEY": "${KRAKEN_SECRET_KEY}"
@@ -49,19 +49,19 @@
     },
     "rhiz-mcp": {
       "type": "stdio",
-      "command": "C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\tools\\rhiz-mcp\\venv\\Scripts\\python.exe",
+      "command": "C:\\Users\\dread\\Documents\\Rhiz\\origin\\tools\\rhiz-mcp\\venv\\Scripts\\python.exe",
       "args": [
-        "C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\tools\\rhiz-mcp\\run_server.py"
+        "C:\\Users\\dread\\Documents\\Rhiz\\origin\\tools\\rhiz-mcp\\run_server.py"
       ],
       "env": {
-        "RHIZ_ROOT": "C:\\Users\\dread\\Documents\\Rhiz_LocalDev"
+        "RHIZ_ROOT": "C:\\Users\\dread\\Documents\\Rhiz\\origin"
       }
     },
     "memory-mcp": {
       "type": "stdio",
       "command": "python",
       "args": [
-        "C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\tools\\memory-mcp\\server.py"
+        "C:\\Users\\dread\\Documents\\Rhiz\\origin\\tools\\memory-mcp\\server.py"
       ],
       "env": {
         "QDRANT_HOST": "localhost",

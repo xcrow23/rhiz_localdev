@@ -13,7 +13,7 @@ import urllib.parse
 sys.path.insert(0, 'src')
 
 # Load .env
-env_path = '/mnt/c/Users/dread/Documents/Rhiz_LocalDev/.env'
+env_path = '/mnt/c/Users/dread/Documents/Rhiz/origin/.env'
 with open(env_path) as f:
     for line in f:
         line = line.strip()

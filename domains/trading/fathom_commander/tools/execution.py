@@ -29,8 +29,8 @@ except ImportError:
 env_paths = [
     os.path.join(_parent_dir, '.env'),  # Commander directory
     os.path.join(_parent_dir, '..', '..', '..', '.env'),  # Project root (Windows)
-    'C:/Users/dread/Documents/Rhiz_LocalDev/.env',  # Absolute Windows path
-    '/mnt/c/Users/dread/Documents/Rhiz_LocalDev/.env',  # WSL path
+    'C:/Users/dread/Documents/Rhiz/origin/.env',  # Absolute Windows path
+    '/mnt/c/Users/dread/Documents/Rhiz/origin/.env',  # WSL path
 ]
 
 for env_path in env_paths:

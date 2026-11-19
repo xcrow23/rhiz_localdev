@@ -5,10 +5,10 @@ After=network.target
 [Service]
 Type=oneshot
 User=%u
-WorkingDirectory=/mnt/c/Users/dread/documents/rhiz_localdev/tools/memory-sync
-ExecStart=/bin/bash /mnt/c/Users/dread/documents/rhiz_localdev/tools/memory-sync/sync_auto.sh
-StandardOutput=append:/mnt/c/Users/dread/documents/rhiz_localdev/tools/memory-sync/sync_auto.log
-StandardError=append:/mnt/c/Users/dread/documents/rhiz_localdev/tools/memory-sync/sync_auto.log
+WorkingDirectory=/mnt/c/Users/dread/documents/Rhiz/origin/tools/memory-sync
+ExecStart=/bin/bash /mnt/c/Users/dread/documents/Rhiz/origin/tools/memory-sync/sync_auto.sh
+StandardOutput=append:/mnt/c/Users/dread/documents/Rhiz/origin/tools/memory-sync/sync_auto.log
+StandardError=append:/mnt/c/Users/dread/documents/Rhiz/origin/tools/memory-sync/sync_auto.log
 
 # Environment
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"

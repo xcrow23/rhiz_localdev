@@ -28,7 +28,7 @@
 ## Installation
 
 ```bash
-cd /mnt/c/Users/dread/Documents/Rhiz_LocalDev/domains/trading/fathom
+cd /mnt/c/Users/dread/Documents/Rhiz/origin/domains/trading/fathom
 pip install -e .
 ```
 
@@ -55,7 +55,7 @@ export FATHOM_ALERT_PHONE="+1..."
 Or use existing Rhiz `.env`:
 ```bash
 # Fathom will also read from KRAKEN_API_KEY and KRAKEN_SECRET_KEY
-source /mnt/c/Users/dread/Documents/Rhiz_LocalDev/.env
+source /mnt/c/Users/dread/Documents/Rhiz/origin/.env
 ```
 
 ---
@@ -80,7 +80,7 @@ Add to `claude_desktop_config.json`:
     "fathom": {
       "command": "python",
       "args": ["-m", "fathom.server"],
-      "cwd": "/mnt/c/Users/dread/Documents/Rhiz_LocalDev/domains/trading/fathom"
+      "cwd": "/mnt/c/Users/dread/Documents/Rhiz/origin/domains/trading/fathom"
     }
   }
 }

@@ -27,8 +27,10 @@ This is not a tool-use relationship. It is a partnership between two neural netw
 
 ## Architecture Overview
 
+> **Location (2026-11-17):** this repo now lives at `Documents\Rhiz\origin\` (formerly `Documents\Rhiz_LocalDev`) as the hibernating origin domain of the unified Rhiz platform. Platform-level context: `../CLAUDE.md`. Claude_Grooves moved out to `../grooves/`.
+
 ```
-Rhiz_LocalDev/
+origin/   (formerly Rhiz_LocalDev/)
 ├── core/
 │   ├── memory/           # Session persistence, checkpoints, Qdrant embeddings
 │   ├── skills/           # Skill definitions, primitives, semantic routing
@@ -58,8 +60,7 @@ Rhiz_LocalDev/
 │   ├── memory-mcp/       # Memory semantic search MCP server
 │   ├── memory-browser/   # Memory exploration UI
 │   └── memory-sync/      # Cloud-local memory synchronization
-├── external/             # Reference repos (LocalAI, claude-experimental, etc)
-└── Claude_Grooves/       # Parallel music project (separate scope)
+└── external/             # Reference repos (LocalAI, claude-experimental, etc)
 ```
 
 ## Hardware Context

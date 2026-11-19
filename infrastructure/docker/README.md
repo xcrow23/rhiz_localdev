@@ -18,7 +18,7 @@ infrastructure/docker/
 
 The primary `docker-compose.yml` is located at the project root:
 ```bash
-cd /c/Users/dread/Documents/Rhiz_LocalDev
+cd /c/Users/dread/Documents/Rhiz/origin
 docker-compose up -d
 ```
 

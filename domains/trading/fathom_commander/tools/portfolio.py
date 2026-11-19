@@ -25,8 +25,8 @@ except ImportError:
 # Load environment for auth - try multiple paths
 for env_path in [
     os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env'),  # From fathom_commander
-    'C:\\Users\\dread\\Documents\\Rhiz_LocalDev\\.env',  # Windows path
-    '/mnt/c/Users/dread/Documents/Rhiz_LocalDev/.env',  # WSL path
+    'C:\\Users\\dread\\Documents\\Rhiz\\origin\\.env',  # Windows path
+    '/mnt/c/Users/dread/Documents/Rhiz/origin/.env',  # WSL path
     os.path.expanduser('~/.env')  # Fallback
 ]:
     if os.path.exists(env_path):

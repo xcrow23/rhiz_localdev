@@ -150,7 +150,7 @@ curl http://localhost:6333/collections/rhiz_memories
 
 **Fix**:
 ```bash
-cd /mnt/c/Users/dread/documents/rhiz_localdev
+cd /mnt/c/Users/dread/documents/Rhiz/origin
 docker-compose up -d qdrant
 ```
 
@@ -178,7 +178,7 @@ pip3 install qdrant-client
 
 **Fix** (reverse sync):
 ```bash
-cd /mnt/c/Users/dread/documents/rhiz_localdev/core/memory/scripts
+cd /mnt/c/Users/dread/documents/Rhiz/origin/core/memory/scripts
 python3 sync_cloud.py --reverse --tunnel
 ```
 

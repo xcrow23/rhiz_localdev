@@ -12,9 +12,9 @@ from typing import Optional
 # Cross-platform: detect if running on Windows or WSL
 import platform
 if platform.system() == "Windows":
-    SANDBOX_ROOT = Path(r"C:\Users\dread\Documents\Rhiz_LocalDev")
+    SANDBOX_ROOT = Path(r"C:\Users\dread\Documents\Rhiz\origin")
 else:
-    SANDBOX_ROOT = Path("/mnt/c/Users/dread/Documents/Rhiz_LocalDev")
+    SANDBOX_ROOT = Path("/mnt/c/Users/dread/Documents/Rhiz/origin")
 
 
 def _validate_path(path: str) -> Path:

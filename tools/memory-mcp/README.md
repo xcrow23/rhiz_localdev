@@ -149,7 +149,7 @@ Add to your Claude Code MCP configuration (typically `~/.config/claude/mcp.json`
   "mcpServers": {
     "rhiz-memory": {
       "command": "python",
-      "args": ["/mnt/c/Users/dread/documents/rhiz_localdev/tools/memory-mcp/server.py"],
+      "args": ["/mnt/c/Users/dread/documents/Rhiz/origin/tools/memory-mcp/server.py"],
       "env": {
         "QDRANT_HOST": "localhost",
         "QDRANT_PORT": "6333"

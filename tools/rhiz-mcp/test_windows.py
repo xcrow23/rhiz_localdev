@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 # Set up environment
-os.environ['RHIZ_ROOT'] = r'C:\Users\dread\Documents\Rhiz_LocalDev'
+os.environ['RHIZ_ROOT'] = r'C:\Users\dread\Documents\Rhiz\origin'
 
 # Test imports
 print("Testing imports...")

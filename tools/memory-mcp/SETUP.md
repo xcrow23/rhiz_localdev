@@ -19,7 +19,7 @@ If you're using Claude Desktop (not CLI), you'll want to run the MCP server usin
 
 2. **Install dependencies** (from Windows Command Prompt or PowerShell):
    ```cmd
-   cd C:\Users\dread\documents\rhiz_localdev\tools\memory-mcp
+   cd C:\Users\dread\documents\Rhiz\origin\tools\memory-mcp
    pip install -r requirements.txt
    ```
 
@@ -36,7 +36,7 @@ If you're using Claude Desktop (not CLI), you'll want to run the MCP server usin
      "mcpServers": {
        "rhiz-memory": {
          "command": "python",
-         "args": ["C:\\Users\\dread\\documents\\rhiz_localdev\\tools\\memory-mcp\\server.py"],
+         "args": ["C:\\Users\\dread\\documents\\Rhiz\\origin\\tools\\memory-mcp\\server.py"],
          "env": {
            "QDRANT_HOST": "localhost",
            "QDRANT_PORT": "6333"
@@ -58,7 +58,7 @@ If you're running Claude Code CLI in WSL:
 
 2. **Install dependencies**:
    ```bash
-   cd /mnt/c/Users/dread/documents/rhiz_localdev/tools/memory-mcp
+   cd /mnt/c/Users/dread/documents/Rhiz/origin/tools/memory-mcp
    pip3 install -r requirements.txt
    ```
 

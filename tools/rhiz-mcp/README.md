@@ -47,7 +47,7 @@ rhiz-mcp/
 ## Installation
 
 ```bash
-cd /mnt/c/Users/dread/Documents/Rhiz_LocalDev/tools/rhiz-mcp
+cd /mnt/c/Users/dread/Documents/Rhiz/origin/tools/rhiz-mcp
 pip install -r requirements.txt
 ```
 

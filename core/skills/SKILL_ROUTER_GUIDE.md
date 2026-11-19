@@ -78,7 +78,7 @@ Request (natural language)
 ### Interactive Mode
 
 ```bash
-cd /mnt/c/Users/dread/documents/rhiz_localdev
+cd /mnt/c/Users/dread/documents/Rhiz/origin
 source venv/bin/activate
 python3 core/skills/router/cli.py
 ```

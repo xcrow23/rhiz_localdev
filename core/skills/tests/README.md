@@ -248,7 +248,7 @@ docker start qdrant
 
 ```bash
 # Ensure RHIZ_ROOT is set or run from project root
-cd C:\Users\dread\Documents\Rhiz_LocalDev
+cd C:\Users\dread\Documents\Rhiz\origin
 pytest core/skills/tests/ -v
 ```
 

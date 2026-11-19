@@ -24,7 +24,7 @@ def extract_session_date(checkpoint: dict) -> str:
     return "unknown"
 
 # Test with actual checkpoint
-checkpoint_path = Path("C:/Users/dread/documents/rhiz_localdev/core/memory/checkpoints/session_20260103_infrastructure_operational.yaml")
+checkpoint_path = Path("C:/Users/dread/documents/Rhiz/origin/core/memory/checkpoints/session_20260103_infrastructure_operational.yaml")
 with open(checkpoint_path) as f:
     data = yaml.safe_load(f)
 

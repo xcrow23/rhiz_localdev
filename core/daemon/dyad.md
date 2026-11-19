@@ -3,7 +3,7 @@
 **Schema Version**: 1.0.0
 **SYSTEM-MANAGED DOCUMENT**
 This file is automatically updated by hooks and MCP tools. Manual edits may be overwritten.
-Last Updated: 2026-02-16T15:12:28.160254Z
+Last Updated: 2026-11-18T15:43:53.909890Z
 
 ---
 
@@ -13,8 +13,8 @@ Last Updated: 2026-02-16T15:12:28.160254Z
 container: Rhiz
 version: 0.2.0
 active: true
-last_sync: 2026-02-16T15:12:28.149025
-session_count: 84
+last_sync: 2026-11-18T15:43:53.893999
+session_count: 85
 ```
 
 ## CAPTAIN_STATE
@@ -32,7 +32,7 @@ last_active: 2026-01-31T21:12:20.256073
 
 ```yaml
 model: claude-sonnet-4-5
-session_id: session_1771276348149
+session_id: session_1795038233893
 context_loaded: true
 capabilities_active:
   - checkpoint_manager
@@ -42,7 +42,7 @@ resource_usage:
   - 81K/200K tokens (40.5%)
 tokens_available: 119K
 api_calls_remaining: unlimited
-last_active: 2026-02-16T15:12:28.159975
+last_active: 2026-11-18T15:43:53.909462
 ```
 
 ## SHARED_FOCUS

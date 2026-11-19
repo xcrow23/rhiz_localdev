@@ -8,7 +8,7 @@ param(
     [switch]$Force = $false
 )
 
-$RhizRoot = "C:\Users\dread\documents\rhiz_localdev"
+$RhizRoot = "C:\Users\dread\documents\Rhiz\origin"
 $ArchiveDir = "$RhizRoot\external\archive"
 $BackupDir = "$RhizRoot\.cleanup_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 
